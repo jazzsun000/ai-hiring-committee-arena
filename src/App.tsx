@@ -153,7 +153,11 @@ export default function App() {
       </header>
       {health && !live && (
         <div className="demo-banner" data-testid="demo-banner">
-          {health.llm_active && health.endpoint === 'test-override' ? 'TEST MODE · mock LLM endpoint (not a real provider call)' : 'DEMO MODE · deterministic rule-based scorer (no live LLM call)'}
+          {import.meta.env.VITE_STATIC_DEMO === '1'
+            ? 'Static demo: deterministic scoring, recorded Telem sources. LIVE version runs agents on Runware.'
+            : health.llm_active && health.endpoint === 'test-override'
+              ? 'TEST MODE · mock LLM endpoint (not a real provider call)'
+              : 'DEMO MODE · deterministic rule-based scorer (no live LLM call)'}
         </div>
       )}
 
@@ -239,7 +243,7 @@ export default function App() {
         </section>
         <aside className="side-col">
           <div ref={ledgerRef} data-testid="ledger"><DecisionLedger rows={ledger} /></div>
-          {(sourcesLoading || phase !== 'setup') && <div data-testid="sources"><SourcesPanel sources={sources} provider="Telem" loading={sourcesLoading} /></div>}
+          {(sourcesLoading || phase !== 'setup') && <div data-testid="sources"><SourcesPanel sources={sources} provider={import.meta.env.VITE_STATIC_DEMO === '1' ? 'Telem · recorded snapshot' : 'Telem'} loading={sourcesLoading} /></div>}
         </aside>
       </main>
     </div>

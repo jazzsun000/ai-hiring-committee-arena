@@ -31,6 +31,24 @@ npm run dev
 - API: http://localhost:8787. Check it with `curl -s localhost:8787/api/health`.
 - `npm run build` type-checks and builds the frontend. `npm start` runs only the API.
 
+## Public static demo (GitHub Pages)
+
+GitHub Pages can only host a static site, so this is a clearly labeled **DEMO**, not the LIVE interview:
+
+**https://jazzsun000.github.io/ai-hiring-committee-arena/**
+
+It runs entirely in the browser with deterministic scoring and a recorded Telem sources snapshot (Stripe · Product Data Scientist, 2026-11-23). There are no API keys in the bundle. The banner reads: "Static demo: deterministic scoring, recorded Telem sources. LIVE version runs agents on Runware."
+
+The normal `npm run dev` LIVE/DEMO path is unchanged. To rebuild the Pages site locally:
+
+```bash
+npm run build:pages
+npx vite preview --base /ai-hiring-committee-arena/
+```
+
+Then open http://127.0.0.1:4173/ai-hiring-committee-arena/. `build:pages` sets `VITE_STATIC_DEMO=1` and `base: /ai-hiring-committee-arena/`.
+
+
 Tests (with `npm run dev` running):
 
 ```bash

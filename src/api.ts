@@ -1,3 +1,4 @@
+import { staticApi } from './staticDemo/api';
 export type Scorer = 'maya' | 'alex';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export interface Question { round: number; asker: Scorer; topic: string; topicLabel: string; difficulty: Difficulty; text: string; reason: string; trend: 'up' | 'down' | 'flat' | 'start'; source: 'llm' | 'deterministic' }
@@ -17,7 +18,7 @@ async function call<T>(path: string, body?: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export const api = {
+const liveApi = {
   health: () => call<Health>('/api/health'),
   start: (company: string, role: string) => call<{ session_id: string; mode: string; question: Question; context: { ok: boolean; sources: Source[]; error: string | null } }>('/api/session', { company, role }),
   answer: (session_id: string, answer: string) => call<{ round: number; assessments: Assessment[] }>('/api/answer', { session_id, answer }),
@@ -26,3 +27,6 @@ export const api = {
   analytics: (session_id: string) => call<import('./components/BruinPanel').BruinResult>('/api/analytics/run', { session_id }),
   event: (e: Record<string, unknown>) => call('/api/events', e).catch(() => undefined),
 };
+
+/** Live `/api` client, or the in-browser deterministic engine when VITE_STATIC_DEMO=1. */
+export const api = import.meta.env.VITE_STATIC_DEMO === '1' ? staticApi : liveApi;
