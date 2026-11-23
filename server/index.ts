@@ -1,9 +1,12 @@
 import express from 'express';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
 import { TOPICS, topicById, type Difficulty } from './bank.js';
 import { scoreDeterministic, nextDifficulty, type Assessment } from './deterministic.js';
-import { appendEvent, EVENTS_FILE } from './events.js';
-import { runAnalytics } from './analytics.js';
+import { appendEvent, EVENTS_FILE, eventsFileLabel } from './events.js';
+import { runAnalytics, bruinOnHost } from './analytics.js';
 import { retrieveContext, telemStatus, trimWords, openingLead, type Source } from './context.js';
 import { ensureMode, state, tryLLM, cfg } from './llm.js';
 
@@ -181,7 +184,7 @@ async function buildScorecard(s: Session) {
 const app = express();
 app.use(express.json({ limit: '200kb' }));
 
-app.get('/api/health', async (_req, res) => { await ensureMode(); res.json({ ok: true, mode: state.mode, provider: state.provider, model: state.model, endpoint: state.endpoint, llm_active: state.llmActive, last_real_success_at: state.lastRealSuccessAt, reason: state.reason, events_file: 'analytics/data/events.jsonl', telem: telemStatus }); });
+app.get('/api/health', async (_req, res) => { await ensureMode(); res.json({ ok: true, mode: state.mode, provider: state.provider, model: state.model, endpoint: state.endpoint, llm_active: state.llmActive, last_real_success_at: state.lastRealSuccessAt, reason: state.reason, events_file: eventsFileLabel(), bruin_on_host: await bruinOnHost(), telem: telemStatus }); });
 
 app.post('/api/events', (req, res) => {
   try { res.json({ ok: true, event: appendEvent(req.body ?? {}) }); }
@@ -249,7 +252,16 @@ app.post('/api/analytics/run', async (req, res) => {
   catch (e) { res.status(500).json({ ok: false, error: (e as Error).message }); }
 });
 
+// Production: serve the built React UI from the same origin (web-dist/ from `npm run build:host`, else dist/).
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const STATIC_DIR = [process.env.STATIC_DIR, path.join(ROOT, 'web-dist'), path.join(ROOT, 'dist')].find((d) => d && fs.existsSync(path.join(d, 'index.html')));
+if (STATIC_DIR) {
+  app.use(express.static(STATIC_DIR, { index: false, maxAge: '1h' }));
+  app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(STATIC_DIR, 'index.html')));
+}
+
 const PORT = Number(process.env.PORT || 8787);
+const HOST = process.env.HOST || '0.0.0.0';
 ensureMode(true).finally(() => {
-  app.listen(PORT, () => console.log(`[api] http://localhost:${PORT} mode=${state.mode} (${state.reason}) events -> ${EVENTS_FILE}`));
+  app.listen(PORT, HOST, () => console.log(`[api] http://${HOST}:${PORT} mode=${state.mode} (${state.reason}) events -> ${EVENTS_FILE}${STATIC_DIR ? ` ui -> ${path.relative(ROOT, STATIC_DIR)}` : ''}`));
 });

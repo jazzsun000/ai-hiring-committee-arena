@@ -1,9 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const EVENTS_FILE = path.join(root, 'analytics', 'data', 'events.jsonl');
+// DATA_DIR makes the event log location configurable for hosts with a read-only app dir.
+const DATA_DIR = process.env.DATA_DIR?.trim() || path.join(root, 'analytics', 'data');
+export let EVENTS_FILE = path.join(DATA_DIR, 'events.jsonl');
+/** Human-readable location (relative to the repo when possible) for /api/health. */
+export const eventsFileLabel = () => (EVENTS_FILE.startsWith(root + path.sep) ? path.relative(root, EVENTS_FILE) : EVENTS_FILE);
 
 export type EventType = 'question' | 'answer' | 'assessment' | 'decision' | 'scorecard';
 export interface ArenaEvent {
@@ -42,7 +47,18 @@ export function normalizeEvent(e: Partial<ArenaEvent>): ArenaEvent {
 
 export function appendEvent(e: Partial<ArenaEvent>): ArenaEvent {
   const ev = normalizeEvent(e);
-  fs.mkdirSync(path.dirname(EVENTS_FILE), { recursive: true });
-  fs.appendFileSync(EVENTS_FILE, JSON.stringify(ev) + '\n');
+  const line = JSON.stringify(ev) + '\n';
+  try {
+    fs.mkdirSync(path.dirname(EVENTS_FILE), { recursive: true });
+    fs.appendFileSync(EVENTS_FILE, line);
+  } catch (err) {
+    // Read-only app directory (e.g. a container running as nobody): fall back to the OS temp dir once.
+    const fallback = path.join(os.tmpdir(), 'arena-data', 'events.jsonl');
+    if (EVENTS_FILE === fallback) throw err;
+    console.warn(`[events] ${EVENTS_FILE} not writable (${(err as Error).message}); using ${fallback}`);
+    EVENTS_FILE = fallback;
+    fs.mkdirSync(path.dirname(EVENTS_FILE), { recursive: true });
+    fs.appendFileSync(EVENTS_FILE, line);
+  }
   return ev;
 }

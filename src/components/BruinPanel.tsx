@@ -1,13 +1,19 @@
 export interface TrendRow { round: number; avg_score: number | null; difficulty: string; prev_difficulty: string | null; difficulty_rose: boolean; adaptivity: boolean }
-export interface BruinResult { ok: boolean; ms: number; session_trend: TrendRow[]; candidate_summary: { adaptivity: boolean; start_difficulty: string; end_difficulty: string; overall_avg_score: number; n_rounds: number } | null }
+export interface BruinResult { ok: boolean; available?: boolean; reason?: string; ms: number; session_trend: TrendRow[]; candidate_summary: { adaptivity: boolean; start_difficulty: string; end_difficulty: string; overall_avg_score: number; n_rounds: number } | null }
 
 export function BruinPanel({ data, loading, error, onRetry }: { data: BruinResult | null; loading: boolean; error: string | null; onRetry: () => void }) {
   return (
     <div className="panel bruin-panel" data-testid="bruin-panel">
       <p className="overline">Bruin analytics · DuckDB marts</p>
+      {import.meta.env.VITE_STATIC_DEMO === '1' && (
+        <p className="muted">In-browser trend for this static demo. The LIVE app runs the full Bruin → DuckDB pipeline.</p>
+      )}
       {loading && <p className="muted" role="status">Running Bruin pipeline (ingest → DuckDB → marts)…</p>}
       {error && <p className="bruin-error">Bruin run failed: {error} <button className="btn" onClick={onRetry}>Retry</button></p>}
-      {data && (
+      {data && data.available === false && (
+        <p className="muted" data-testid="bruin-unavailable">Bruin: not available on this host. Pipeline evidence is from the repo run (analytics/evidence/bruin_run.log), not live execution here.</p>
+      )}
+      {data && data.available !== false && (
         <>
           <table className="bruin-table">
             <thead><tr><th>Round</th><th>Avg score</th><th>Difficulty</th><th>Adapted</th></tr></thead>

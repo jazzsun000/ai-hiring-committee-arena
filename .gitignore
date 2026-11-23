@@ -1,6 +1,7 @@
 # dependencies / build output
 node_modules/
 dist/
+web-dist/
 
 # secrets (never commit)
 .env
