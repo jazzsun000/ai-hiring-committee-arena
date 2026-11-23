@@ -1,0 +1,32 @@
+// Scripted API e2e: strong answer then weak answer, then scorecard. Usage: node scripts/e2e-api.mjs [baseUrl]
+const BASE = process.argv[2] || 'http://localhost:5173';
+const STRONG = "I'd define success as 7-day activation, meaning a user completes their first core action, since that's what predicts retention. I'd run a randomized A/B test at the user level. Assuming a 20% baseline and a 2-point minimum detectable effect, I'd calculate the sample size for 80% power, which is roughly 6-7k users per arm. Guardrails would be support tickets, onboarding drop-off, and day-1 crash rate. I'd check sample ratio mismatch before reading results, avoid peeking by fixing the duration at two full weeks to cover weekday effects, and segment by new vs. returning platform. If it's significant but small, I'd look at whether the lift holds at day 30 before calling it a win.";
+const WEAK = "I'd just compare revenue before and after the change. If revenue went up, the pricing worked. Maybe also look at a dashboard to see if users like it.";
+const post = async (p, b) => { const r = await fetch(BASE + p, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }); if (!r.ok) throw new Error(p + ' ' + r.status + ' ' + await r.text()); return r.json(); };
+const D = { easy: 1, medium: 2, hard: 3 };
+let fail = 0; const check = (ok, msg) => { console.log((ok ? 'PASS ' : 'FAIL ') + msg); if (!ok) fail++; };
+
+const health = await (await fetch(BASE + '/api/health')).json();
+console.log('health.mode =', health.mode, '|', health.reason.slice(0, 80));
+const s = await post('/api/session', { company: 'Stripe', role: 'Product Data Scientist' });
+const q1 = s.question; console.log(`Q1 [${q1.asker} ${q1.topic}/${q1.difficulty}] ${q1.text}`);
+const a1 = await post('/api/answer', { session_id: s.session_id, answer: STRONG });
+console.log('R1 scores:', a1.assessments.map((a) => `${a.agent}=${a.score} (${a.source})`).join(', '));
+check(a1.assessments.every((a) => a.score >= 4), 'strong answer scored >=4 by both');
+const q2 = (await post('/api/next', { session_id: s.session_id })).question;
+console.log(`Q2 [${q2.asker} ${q2.topic}/${q2.difficulty} trend=${q2.trend}] ${q2.text}\n   reason: ${q2.reason}`);
+check(D[q2.difficulty] > D[q1.difficulty] && q2.trend === 'up', 'difficulty went UP after strong answer');
+const a2 = await post('/api/answer', { session_id: s.session_id, answer: WEAK });
+console.log('R2 scores:', a2.assessments.map((a) => `${a.agent}=${a.score} (${a.source})`).join(', '));
+check(a2.assessments.every((a) => a.score <= 2), 'weak answer scored <=2 by both');
+const q3 = (await post('/api/next', { session_id: s.session_id })).question;
+console.log(`Q3 (would-be +1 round) [${q3.asker} ${q3.topic}/${q3.difficulty} trend=${q3.trend}]\n   reason: ${q3.reason}`);
+check((D[q3.difficulty] < D[q2.difficulty]) || (q3.topic === q2.topic && /prob/i.test(q3.reason)), 'difficulty DOWN or probing after weak answer');
+const card = await post('/api/scorecard', { session_id: s.session_id });
+console.log('scorecard:', card.recommendation, card.overall, 'rounds=', card.rounds, 'source=', card.source);
+card.quotes.forEach((q) => console.log('   quote:', JSON.stringify(q)));
+const verbatim = card.quotes.filter((q) => STRONG.includes(q) || WEAK.includes(q));
+check(verbatim.length >= 2, `scorecard has >=2 verbatim quotes (${verbatim.length})`);
+console.log('session_id', s.session_id);
+console.log(fail ? `${fail} FAILED` : 'ALL PASS');
+process.exit(fail ? 1 : 0);

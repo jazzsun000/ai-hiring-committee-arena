@@ -1,0 +1,14 @@
+# Local DuckDB state (rebuilt by run_pipeline.sh)
+arena.duckdb
+arena.duckdb.wal
+*.duckdb
+*.duckdb.wal
+.venv/
+__pycache__/
+logs/
+
+.bruin.yml
+logs/runs
+logs/*.log
+*.py[cod]
+logs/queries

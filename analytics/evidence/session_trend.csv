@@ -1,0 +1,7 @@
+session_id,round,avg_score,n_assessments,difficulty,difficulty_rank,prev_avg_score,prev_difficulty,prev_difficulty_rank,difficulty_rose,prior_round_high_score,adaptivity
+9adc4c81-ceba-4bb9-b68a-148ab6363a77,1,4.5,2,medium,2,,,,false,false,false
+9adc4c81-ceba-4bb9-b68a-148ab6363a77,2,1.5,2,hard,3,4.5,medium,2,true,true,true
+synthetic-demo-001,1,4.33,3,medium,2,,,,false,false,false
+synthetic-demo-001,2,4.33,3,hard,3,4.333333333333333,medium,2,true,true,true
+synthetic-demo-002,1,2.33,3,medium,2,,,,false,false,false
+synthetic-demo-002,2,2.33,3,easy,1,2.3333333333333335,medium,2,false,false,false
