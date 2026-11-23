@@ -1,0 +1,49 @@
+# Public E2E against https://ai-hiring-arena-4eba89b2.apps.lingcode.app at 2026-11-23 15:44:09 PST
+homepage HTTP 200 text/html; charset=UTF-8
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>AI Hiring Committee Arena</title>
+    <script type="module" crossorigin src="/assets/index-Bk3z4_5U.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-D_XeyxpR.css">
+  </head>
+  <bo
+bundle /assets/index-Bk3z4_5U.js HTTP 200 size 173593
+avatar Maya in bundle: 1
+avatar Alex in bundle: 1
+avatar Jordan in bundle: 1
+health: {'ok': True, 'mode': 'live', 'provider': 'runware', 'model': 'openai:gpt@5', 'events_file': 'analytics/data/events.jsonl', 'bruin_on_host': False, 'reason': 'Runware openai:gpt@5 verified by a real call'} telem: {'available': False, 'lastOk': None, 'lastCount': 0, 'lastError': None, 'lastAt': None}
+health.mode = live | provider = runware | endpoint = runware | llm_active = true | Runware openai:gpt@5 verified by a real call
+telem context: true 8 sources 
+Q1 [maya metrics/medium] Stripe's listing says the Data Science team partners deeply with teams across Stripe to ensure that our users, our… Our new onboarding flow at Stripe just launched. How would you measure whether it worked?
+R1 scores: maya=3 (llm), alex=3 (llm)
+SKIP (live mode) strong >=4 score check; live check = difficulty goes up
+Q2 [maya metrics/medium trend=flat] Stripe-specific: For a new onboarding flow, which primary and guardrail metrics would you choose (e.g., time-to-first-charge, KYB/KYC completion, payout readiness), and how would you instrument and define them precisely?
+   reason: They gave a solid generic A/B plan but missed Stripe-specific north-star and compliance metrics and precise instrumentation/definitions.
+FAIL difficulty went UP after strong answer
+R2 scores: maya=1 (llm), alex=1 (llm)
+PASS weak answer scored <=2 by both
+Q3 (would-be +1 round) [maya ab_testing/easy trend=down]
+   reason: The candidate missed core metrics and causal design, so we should step down and probe basic experimentation fundamentals.
+PASS difficulty DOWN or probing after weak answer
+PASS R3 question does not repeat an earlier question
+TIMINGS {"session_total_ms":1572,"telem_ms":1088,"r1":{"maya_ms":2847,"alex_ms":2986,"scoring_total_ms":2987,"jordan_ms":2139,"round_total_ms":5126},"r2":{"maya_ms":1842,"alex_ms":2045,"scoring_total_ms":2046,"jordan_ms":1772,"round_total_ms":3818},"scorecard_ms":2281}
+LLM steps: 7, fell back to deterministic: 0
+scorecard: no_hire 2 rounds= 2 source= llm
+   quote: "I'd define success as 7-day activation, meaning a user completes their first core action, since that's what predicts retention."
+   quote: "I'd just compare revenue before and after the change."
+PASS scorecard has >=2 verbatim quotes (2)
+session_id 98ad667e-b834-48cb-95ba-03714b6d390a
+1 FAILED
+session mode live telem sources 8 Q1 medium
+R1 (README STRONG) maya=4(llm) alex=5(llm)
+Q2 hard up llm
+R2 (WEAK) maya=1(llm) alex=1(llm)
+Q3 easy down
+scorecard lean_no_hire 2.8 source llm quotes 2
+bruin endpoint {"ok":false,"available":false,"reason":"Bruin CLI not available on this host; pipeline evidence comes from the repo run (analytics/evidence/bruin_run.log)."}
+events write ok true
+health events_file /tmp/arena-data/events.jsonl bruin_on_host false telem {"available":true,"lastOk":true,"lastCount":8,"lastError":null,"lastAt":"2026-11-23T23:44:42.100Z"}

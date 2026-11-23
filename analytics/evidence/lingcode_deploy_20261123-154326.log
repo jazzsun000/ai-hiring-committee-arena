@@ -1,0 +1,26 @@
+[2026-11-23 15:43:26 PST] clean checkout of origin/master -> /workspace/arena-lingcode-deploy
+[2026-11-23 15:43:27 PST] commit 7d029ea
+web-dist/index.html                   0.45 kB │ gzip:  0.29 kB
+web-dist/assets/index-D_XeyxpR.css   21.58 kB │ gzip:  5.36 kB
+web-dist/assets/index-Bk3z4_5U.js   173.52 kB │ gzip: 55.64 kB
+✓ built in 880ms
+[2026-11-23 15:43:32 PST] lingcode whoami
+jazz.sun000@gmail.com (pro) on https://lingcode.dev
+[2026-11-23 15:43:33 PST] resolve production backend
+Production backend 3d7ba2cea6a3fb0811f16ef7 (.)
+LINGCODE_URL=https://lingcode.dev/api/cloud/be/3d7ba2cea6a3fb0811f16ef7
+[2026-11-23 15:43:34 PST] vault secret RUNWARE_API_KEY -> HTTP 200 (value not logged)
+[2026-11-23 15:43:34 PST] vault secret TELEM_API_KEY -> HTTP 200 (value not logged)
+[2026-11-23 15:43:34 PST] vault secret LLM_PROVIDER -> HTTP 200 (value not logged)
+[2026-11-23 15:43:34 PST] vault secret RUNWARE_MODEL -> HTTP 200 (value not logged)
+[2026-11-23 15:43:34 PST] lingcode ship --server --name ai-hiring-arena
+Detected a node server (forced).
+Production backend 3d7ba2cea6a3fb0811f16ef7 (.)
+Created app ai-hiring-arena (node).
+Uploading source (190 KB compressed)…
+Building and starting…
+  building
+  running
+
+Live: https://ai-hiring-arena-4eba89b2.apps.lingcode.app/
+[2026-11-23 15:44:02 PST] ship exit 0

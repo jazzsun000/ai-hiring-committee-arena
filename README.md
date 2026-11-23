@@ -31,6 +31,15 @@ npm run dev
 - API: http://localhost:8787. Check it with `curl -s localhost:8787/api/health`.
 - `npm run build` type-checks and builds the frontend. `npm start` runs only the API.
 
+## Public LIVE app (LingCode Cloud)
+
+**https://ai-hiring-arena-4eba89b2.apps.lingcode.app/** is the full-stack LIVE app: Express plus the built React UI, with Runware `openai:gpt@5` agents and Telem retrieval. It runs on LingCode Cloud's **hosted-apps tier** (Node container, Pro plan) and was deployed with `npx lingcode ship --server` (`scripts/deploy-lingcode.sh`) on 2026-11-23 at 3:44 PM PT.
+
+- The keys are stored in the LingCode backend secrets vault and passed to the server as environment variables: `RUNWARE_API_KEY`, `TELEM_API_KEY`, `LLM_PROVIDER=runware` and `RUNWARE_MODEL=openai:gpt@5`. They are not in the repo, the upload or the browser bundle.
+- **Bruin does not run on this host.** The Bruin CLI is 164 MB, and hosted-app uploads are capped at 5 MiB per file. DuckDB is also absent. The Bruin panel says "not available on this host". Bruin is VERIFIED from the repo run (`analytics/evidence/bruin_run.log`), not from live execution on LingCode.
+- **Storage:** the app directory is read-only, so events go to `/tmp/arena-data/events.jsonl`, which is ephemeral and reset on redeploy.
+- **Evidence:** [deploy log](analytics/evidence/lingcode_deploy_20261123-154326.log), [public API e2e](analytics/evidence/lingcode_public_e2e_20261123-154409.log), [public UI e2e](analytics/evidence/lingcode_deploy.md).
+
 ## Public static demo (GitHub Pages)
 
 GitHub Pages can only host a static site, so this is a clearly labeled **DEMO**, not the LIVE interview:
@@ -80,6 +89,7 @@ cd analytics && PATH=$PATH:$HOME/.local/bin ./run_pipeline.sh   # writes analyti
 | Bruin | **VERIFIED**. `run_pipeline.sh` exits 0 (5 assets, 45 checks). The scorecard's Bruin panel reads `marts.session_trend` and `marts.candidate_summary` | [analytics/evidence/bruin_run.log](analytics/evidence/bruin_run.log), [mart_row_counts.txt](analytics/evidence/mart_row_counts.txt) |
 | Telem | **VERIFIED**. A real end-to-end call through the app on 2026-11-23 returned 8 sources; they render as links and the top snippet grounds Q1 | [analytics/evidence/telem_call.md](analytics/evidence/telem_call.md), [telem_module_test.txt](analytics/evidence/telem_module_test.txt), screenshot `/workspace/ai-hiring-arena-shots/loop2-telem-sources.png` (outside the repo) |
 | Runware (LLM) | **VERIFIED** (real calls, 12:35 PM PT Nov 23). Model `openai:gpt@5` via `RUNWARE_MODEL`: full live e2e with 7/7 LLM steps succeeding and 0 fallbacks. Measured: Maya+Alex in parallel 1.6–3.1 s per round, Jordan 2.2–2.3 s, scorecard 3.0 s, about 3.9–5.3 s per round. The default `minimax:m3@0` returns HTTP 200 but is a thinking model: 6–10 s on a tiny prompt and over 45 s on the real prompts, so every step timed out and fell back | [runware_call_openai_gpt5](analytics/evidence/runware_call_openai_gpt5.md), [runware_call_minimax_m3](analytics/evidence/runware_call_minimax_m3.md), `/workspace/ai-hiring-arena-shots/loop3-live-*` |
+| LingCode Cloud | **VERIFIED** (hosted-apps tier, 2026-11-23 3:44 PM PT). The full-stack app was deployed with `lingcode ship --server`, and secrets are in the LingCode vault. The public e2e test passed in LIVE mode: 8 Telem sources, a strong answer moved difficulty up to hard, a weak answer moved it down to easy, and the scorecard quoted the answers verbatim | [analytics/evidence/lingcode_deploy.md](analytics/evidence/lingcode_deploy.md) |
 | BAND | NOT IMPLEMENTED | none |
 | Glasser | NOT IMPLEMENTED | none |
 

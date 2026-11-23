@@ -1,0 +1,29 @@
+badge: LIVE · Runware | banner: 0
+telem source links: 8 | first: https://stripe.com/careers/listing/data-scientist/5601879 | target: _blank | rel: noopener noreferrer
+banner text: (none)
+Q1 bubble includes Telem snippet: true
+chip R1: Product metrics | Medium | → Same level |  | Jordan: Opening: Maya starts with a medium product-metrics question, grounded in 8 Telem sources.
+busy line: Maya & Alex are scoring… | thinking avatars: 3
+chip R2: A/B testing | Medium | → Same level |  | Jordan: Both assessors scored 3, noting missing Stripe-specific metrics and tradeoff handling; we should probe A/B evaluation with risk/compliance tradeoffs.
+chip opacity R2: 1
+R2 scores: Maya 1/5 I'd just compare revenue before and after the change. Gap: Does not address experiment metrics provided, ignores A/B testing rigor, trade-offs (activation vs KYC), statistical significance, guardrails, segment analysis, or concrete follow-up analyses/experiments. || Alex 1/5 I'd just compare revenue before and after the change. If revenue went up, the pricing worked. Maybe also look at a dashboard to see if users like it. Gap: Does not address experiment metrics given, lacks causal A/B testing framework, ignores trade-offs between activation and KYC passthrough, no statistical significance or power, no guardrails or heterogeneity, and no concrete follow-up analyses or rollouts.
++1 round visible: true | finish visible: true
+quotes: [
+  "“I'd define success as 7-day activation, meaning a user completes their first core action, since that's what predicts retention.”",
+  "“I'd just compare revenue before and after the change.”"
+]
+scorecard auto-scrolled into view: true | scrollY: 1421
+ledger rows: 8
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 60000ms exceeded.
+Call log:
+  - waiting for getByTestId('bruin-adaptivity') to be visible
+
+    at /workspace/ai-hiring-arena/scripts/e2e-ui.mjs:66:44 {
+  name: 'TimeoutError'
+}
+
+Node.js v24.22.1
