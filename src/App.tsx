@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Arena, DecisionLedger, Scorecard, QuestionChip, AgentChip, AGENTS } from './components/arena';
+import { Arena, DecisionLedger, Scorecard, QuestionChip, AgentChip, SourcesPanel, AGENTS } from './components/arena';
 import type { AgentId, AvatarState, LedgerRow, DifficultyDelta } from './components/arena';
 import { BruinPanel, type BruinResult } from './components/BruinPanel';
-import { api, type Assessment, type Health, type Question, type ScorecardData } from './api';
+import { api, type Assessment, type Health, type Question, type ScorecardData, type Source } from './api';
 
 const DEFAULT_ROUNDS = 2;
 const DIFF_NUM = { easy: 2, medium: 3, hard: 4 } as const;
@@ -29,12 +29,18 @@ export default function App() {
   const [error, setError] = useState<{ msg: string; retry: () => void } | null>(null);
   const [bruin, setBruin] = useState<{ data: BruinResult | null; loading: boolean; error: string | null }>({ data: null, loading: false, error: null });
   const [bruinVerified, setBruinVerified] = useState(false);
+  const [sources, setSources] = useState<Source[]>([]);
+  const [sourcesLoading, setSourcesLoading] = useState(false);
+  const ledgerRef = useRef<HTMLDivElement>(null);
+  const scorecardRef = useRef<HTMLDivElement>(null);
   const answerRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => { api.health().then(setHealth).catch(() => setHealth({ ok: false, mode: 'demo', reason: 'backend unreachable', model: null })); }, []);
+  useEffect(() => { api.health().then((h) => { console.info('[arena] provider health:', h.reason); setHealth(h); }).catch(() => setHealth({ ok: false, mode: 'demo', reason: 'backend unreachable', model: null })); }, []);
   useEffect(() => { if (phase === 'asking') answerRef.current?.focus(); }, [phase, rounds.length]);
   useEffect(() => { if (sessionId) localStorage.setItem('arena:last', JSON.stringify({ sessionId, company, role, rounds, ledger, card })); }, [sessionId, rounds, ledger, card, company, role]);
 
+  useEffect(() => { const el = ledgerRef.current?.querySelector('.ledger-list'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, [ledger.length]);
+  useEffect(() => { if (card) scorecardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [card]);
   const current = rounds[rounds.length - 1];
   const addLedger = (row: Omit<LedgerRow, 'time' | 'id'>) => setLedger((l) => [...l, { ...row, time: new Date(), id: `${l.length}` }]);
   const questionLedger = (q: Question) => {
@@ -47,9 +53,13 @@ export default function App() {
   }
 
   const start = () => guard(async () => {
+    setLedger([]);
     setPhase('deciding');
-    const r = await api.start(company, role);
-    setSessionId(r.session_id); setRounds([{ question: r.question }]); setLedger([]); setCard(null); setTargetRounds(DEFAULT_ROUNDS);
+    setSources([]); setSourcesLoading(true);
+    const r = await api.start(company, role).finally(() => setSourcesLoading(false));
+    setSources(r.context?.sources ?? []);
+    if (r.context?.sources?.length) addLedger({ agent: 'jordan', round: 0, decision: `Retrieved ${r.context.sources.length} role sources (Telem)`, reason: 'Context retrieved at interview start to ground the opening question.' });
+    setSessionId(r.session_id); setRounds([{ question: r.question }]); setCard(null); setTargetRounds(DEFAULT_ROUNDS);
     questionLedger(r.question);
     setPhase('asking');
   }, () => start());
@@ -99,7 +109,7 @@ export default function App() {
   }, () => (current?.assessments ? nextQuestion() : submit()));
 
   const plusOne = () => { setTargetRounds((t) => t + 1); api.event({ session_id: sessionId, type: 'decision', agent: 'jordan', round: rounds.length, reason: 'Presenter requested +1 round', text: 'plus_one' }); nextQuestion(); };
-  const restart = () => { setBruin({ data: null, loading: false, error: null }); setPhase('setup'); setRounds([]); setLedger([]); setCard(null); setSessionId(''); setDraft(''); setError(null); };
+  const restart = () => { setSources([]); setBruin({ data: null, loading: false, error: null }); setPhase('setup'); setRounds([]); setLedger([]); setCard(null); setSessionId(''); setDraft(''); setError(null); };
 
   // Avatar states driven by the flow.
   const last = current?.assessments;
@@ -136,12 +146,16 @@ export default function App() {
         </div>
         <div className="header-pills">
         {bruinVerified && <span className="bruin-pill" data-testid="bruin-pill" title="Every answer, score and decision piped through a Bruin pipeline into DuckDB marts">Bruin analytics</span>}
-        <span className={`mode-badge ${live ? 'mode-badge--live' : 'mode-badge--demo'}`} data-testid="mode-badge" title={health?.reason}>
-          {health ? (live ? 'LIVE (xAI)' : 'DEMO') : '…'}
+        <span className={`mode-badge ${live ? 'mode-badge--live' : 'mode-badge--demo'}`} data-testid="mode-badge" >
+          {health ? (live ? 'LIVE · Runware' : 'DEMO') : '…'}
         </span>
         </div>
       </header>
-      {health && !live && <div className="demo-banner" data-testid="demo-banner">DEMO MODE (deterministic): rule-based scoring by keywords, answer length and concepts covered. {health.reason ? `(${health.reason})` : ''}</div>}
+      {health && !live && (
+        <div className="demo-banner" data-testid="demo-banner">
+          {health.llm_active && health.endpoint === 'test-override' ? 'TEST MODE · mock LLM endpoint (not a real provider call)' : 'DEMO MODE · deterministic rule-based scorer (no live LLM call)'}
+        </div>
+      )}
 
       <Arena
         activeAgent={activeAgent}
@@ -213,18 +227,19 @@ export default function App() {
           )}
 
           {card && (
-            <div data-testid="scorecard">
-              <Scorecard candidate="You" role={card.role} company={card.company} skills={card.skills} recommendation={card.recommendation} summary={card.summary} overall={card.overall} />
+            <div data-testid="scorecard" ref={scorecardRef}>
+              <Scorecard candidate="Candidate" role={card.role} company={card.company} skills={card.skills} recommendation={card.recommendation} summary={card.summary} overall={card.overall} />
               <div className="panel quotes" data-testid="quotes">
                 <p className="overline">In your own words</p>
-                {card.quotes.map((q, i) => <blockquote key={i}>“{q}”</blockquote>)}
+                {[...new Set(card.quotes)].map((q) => <blockquote key={q}>“{q}”</blockquote>)}
               </div>
               <BruinPanel data={bruin.data} loading={bruin.loading} error={bruin.error} onRetry={() => runBruin(sessionId)} />
             </div>
           )}
         </section>
-        <aside>
-          <DecisionLedger rows={ledger} />
+        <aside className="side-col">
+          <div ref={ledgerRef} data-testid="ledger"><DecisionLedger rows={ledger} /></div>
+          {(sourcesLoading || phase !== 'setup') && <div data-testid="sources"><SourcesPanel sources={sources} provider="Telem" loading={sourcesLoading} /></div>}
         </aside>
       </main>
     </div>

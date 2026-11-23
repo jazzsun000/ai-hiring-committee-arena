@@ -7,9 +7,10 @@ const D = { easy: 1, medium: 2, hard: 3 };
 let fail = 0; const check = (ok, msg) => { console.log((ok ? 'PASS ' : 'FAIL ') + msg); if (!ok) fail++; };
 
 const health = await (await fetch(BASE + '/api/health')).json();
-console.log('health.mode =', health.mode, '|', health.reason.slice(0, 80));
+console.log('health.mode =', health.mode, '| provider =', health.provider, '| endpoint =', health.endpoint, '| llm_active =', health.llm_active, '|', health.reason.slice(0, 90));
 const s = await post('/api/session', { company: 'Stripe', role: 'Product Data Scientist' });
-const q1 = s.question; console.log(`Q1 [${q1.asker} ${q1.topic}/${q1.difficulty}] ${q1.text}`);
+const q1 = s.question;
+console.log('telem context:', s.context?.ok, (s.context?.sources ?? []).length, 'sources', s.context?.error ?? ''); console.log(`Q1 [${q1.asker} ${q1.topic}/${q1.difficulty}] ${q1.text}`);
 const a1 = await post('/api/answer', { session_id: s.session_id, answer: STRONG });
 console.log('R1 scores:', a1.assessments.map((a) => `${a.agent}=${a.score} (${a.source})`).join(', '));
 check(a1.assessments.every((a) => a.score >= 4), 'strong answer scored >=4 by both');
@@ -22,6 +23,7 @@ check(a2.assessments.every((a) => a.score <= 2), 'weak answer scored <=2 by both
 const q3 = (await post('/api/next', { session_id: s.session_id })).question;
 console.log(`Q3 (would-be +1 round) [${q3.asker} ${q3.topic}/${q3.difficulty} trend=${q3.trend}]\n   reason: ${q3.reason}`);
 check((D[q3.difficulty] < D[q2.difficulty]) || (q3.topic === q2.topic && /prob/i.test(q3.reason)), 'difficulty DOWN or probing after weak answer');
+check(![q1.text, q2.text].includes(q3.text), 'R3 question does not repeat an earlier question');
 const card = await post('/api/scorecard', { session_id: s.session_id });
 console.log('scorecard:', card.recommendation, card.overall, 'rounds=', card.rounds, 'source=', card.source);
 card.quotes.forEach((q) => console.log('   quote:', JSON.stringify(q)));

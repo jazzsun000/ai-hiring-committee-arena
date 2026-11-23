@@ -1,4 +1,10 @@
 session_id,round,agent,decision,reason,topic,difficulty,ts
+1d83d4c0-8628-484d-a7a9-c91a7c20d741,1,jordan,Next asker: maya,Opening: Maya starts with a medium product-metrics question to calibrate.,metrics,medium,2026-11-23T20:16:44Z
+1d83d4c0-8628-484d-a7a9-c91a7c20d741,2,jordan,Next asker: alex,"Raised difficulty: avg 4.5/5, candidate cited ""I'd define success as 7-day activation, meaning a user completes their"". Handing to Alex for a harder Stats & causal inference question.",causal,hard,2026-11-23T20:16:45Z
+1d83d4c0-8628-484d-a7a9-c91a7c20d741,2,jordan,finish,Interview ended via Finish interview; writing scorecard,,,2026-11-23T20:16:47Z
+72cd15af-91ba-48f4-aab1-ad65504ec551,1,jordan,Next asker: maya,Opening: Maya starts with a medium product-metrics question to calibrate.,metrics,medium,2026-11-23T20:17:42Z
+72cd15af-91ba-48f4-aab1-ad65504ec551,2,jordan,Next asker: alex,"Raised difficulty: avg 4.5/5, candidate cited ""I'd define success as 7-day activation, meaning a user completes their"". Handing to Alex for a harder Stats & causal inference question.",causal,hard,2026-11-23T20:17:44Z
+72cd15af-91ba-48f4-aab1-ad65504ec551,2,jordan,finish,Interview ended via Finish interview; writing scorecard,,,2026-11-23T20:17:45Z
 9adc4c81-ceba-4bb9-b68a-148ab6363a77,1,jordan,Next asker: maya,Opening: Maya starts with a medium product-metrics question to calibrate.,metrics,medium,2026-11-23T20:16:25Z
 9adc4c81-ceba-4bb9-b68a-148ab6363a77,2,jordan,Next asker: alex,"Raised difficulty: avg 4.5/5, candidate cited ""I'd define success as 7-day activation, meaning a user completes their"". Handing to Alex for a harder Stats & causal inference question.",causal,hard,2026-11-23T20:16:27Z
 9adc4c81-ceba-4bb9-b68a-148ab6363a77,2,jordan,finish,Interview ended via Finish interview; writing scorecard,,,2026-11-23T20:16:28Z

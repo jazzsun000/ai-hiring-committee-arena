@@ -1,4 +1,4 @@
-recorded_at_pt=2026-11-23 12:16:28 PST
+recorded_at_pt=2026-11-23 12:24:59 PST
 bruin_version=v0.11.832
 bruin_version_raw: Current: v0.11.832 (3590ddcdf90425e609ceb8e0e2c352fb4de995b6)
 bruin_version_raw: Latest: v0.11.832

@@ -11,7 +11,7 @@ let running: Promise<unknown> | null = null;
 
 function run(cmd: string, args: string[], cwd: string, timeout: number): Promise<string> {
   return new Promise((resolve, reject) => {
-    execFile(cmd, args, { cwd, timeout, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, PATH: PATH_ENV, XAI_API_KEY: '' } }, (err, stdout, stderr) => {
+    execFile(cmd, args, { cwd, timeout, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, PATH: PATH_ENV, XAI_API_KEY: '', RUNWARE_API_KEY: '', TELEM_API_KEY: '' } }, (err, stdout, stderr) => {
       if (err) reject(new Error(`${path.basename(cmd)} failed${err.killed ? ' (timeout)' : ''}: ${(stderr || stdout || err.message).trim().split('\n').slice(-4).join(' | ').slice(0, 400)}`));
       else resolve(stdout);
     });

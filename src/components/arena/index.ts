@@ -9,4 +9,6 @@ export { Scorecard } from './Scorecard';
 export type { ScorecardProps, SkillScore, HireRecommendation } from './Scorecard';
 export { QuestionChip } from './QuestionChip';
 export type { QuestionChipProps, DifficultyDelta } from './QuestionChip';
+export { SourcesPanel } from './SourcesPanel';
+export type { SourcesPanelProps, Source } from './SourcesPanel';
 import '../../styles/arena.css';

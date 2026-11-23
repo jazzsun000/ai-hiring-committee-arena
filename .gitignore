@@ -19,3 +19,9 @@ analytics/arena.duckdb*
 # analytics evidence must be committed
 !analytics/evidence/
 !analytics/evidence/**
+
+logs/runs
+logs/*.log
+__pycache__/
+*.py[cod]
+logs/queries

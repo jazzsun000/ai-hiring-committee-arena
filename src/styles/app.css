@@ -11,7 +11,8 @@ html, body { margin: 0; background: #070A12; color: var(--arena-text, #E5E7EB); 
 .question-meta { margin: 12px 0 4px; }
 .busy { margin: 8px 0; padding: 8px 12px; border-radius: 10px; background: rgba(34,211,238,.08); border: 1px dashed rgba(34,211,238,.5); color: #A5F3FC; font-size: 14px; }
 .error-box { margin: 8px 0; padding: 8px 12px; border-radius: 10px; background: rgba(248,113,113,.12); border: 1px solid #F87171; }
-.layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; margin-top: 12px; }
+.layout { display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 16px; margin-top: 12px; align-items: start; }
+.side-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
 .main-panel { padding: 16px; }
 .setup { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }

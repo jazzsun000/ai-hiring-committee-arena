@@ -8,32 +8,96 @@ Three AI interviewers run an adaptive data-science interview:
 
 Every agent decision appears in the **decision ledger** with a reason, and every event is appended to `analytics/data/events.jsonl` for the Bruin pipeline.
 
-## Run
+## Run (copy-paste)
+
+Prerequisites:
+- Node.js 20+ and npm (tested on Node 24.22, npm 11.21).
+- For the analytics pipeline: the Bruin CLI and DuckDB CLI in `~/.local/bin`. Install Bruin with `curl -LsSf https://getbruin.com/install/cli | sh`.
+- `analytics/.bruin.yml` is gitignored by `analytics/.gitignore`, so a fresh clone needs it recreated. See `analytics/README.md`.
 
 ```bash
-npm install && npm run dev
+cd /workspace/ai-hiring-arena
+npm install
+
+# optional: provider/context keys (server/.env is gitignored; re-read on every request)
+cp server/.env.example server/.env
+#   then edit server/.env: LLM_PROVIDER=runware, RUNWARE_API_KEY=..., TELEM_API_KEY=...
+
+npm run dev
 ```
 
-- Frontend (Vite): http://localhost:5173 (proxies `/api` to the backend)
-- Backend (Express, `server/`): http://localhost:8787
+- App: http://localhost:5173. Vite proxies `/api` to the backend.
+- API: http://localhost:8787. Check it with `curl -s localhost:8787/api/health`.
+- `npm run build` type-checks and builds the frontend. `npm start` runs only the API.
 
-`npm run build` type-checks and builds the frontend. The backend runs with `npm start`.
+Tests (with `npm run dev` running):
 
-## xAI key and modes
+```bash
+# API e2e: strong then weak answer -> difficulty up, then down/probe, no repeated question, >=2 verbatim quotes
+node scripts/e2e-api.mjs http://localhost:5173
 
-The key stays server-side only. It's never sent to the browser or logged.
+# Same flow against the mock LLM (exercises the Runware code path; badge stays DEMO by design)
+node scripts/mock-llm.mjs 8799 &
+LLM_PROVIDER=runware RUNWARE_API_KEY=test RUNWARE_BASE_URL=http://localhost:8799/v1 PORT=8789 npx tsx server/index.ts &
+node scripts/e2e-api.mjs http://localhost:8789
 
-- The key is resolved **at request time**: a non-empty `XAI_API_KEY` in `server/.env` (gitignored; see `server/.env.example`) takes precedence. Otherwise `process.env.XAI_API_KEY` is used. `server/.env` is re-read on every call, so you can drop in a new key without restarting.
-- `GET /api/health` returns `{ mode: "live" | "demo", reason, key_source }`. It re-validates the key with a tiny xAI call whenever the key changes, and at most every 30 s.
-- **LIVE (xAI)**: OpenAI-compatible chat completions at `https://api.x.ai/v1`, model `grok-4-fast-non-reasoning` (override with `XAI_MODEL`). Prompts ask for strict JSON. Output is parsed and repaired (code fences, trailing commas), then validated. If any step fails validation, that step falls back to the deterministic scorer. Scorecard quotes are checked to be verbatim, and if there are fewer than 2 verbatim quotes, they're extracted from the answers in code.
-- **DEMO MODE (deterministic)**: used when the key is missing or rejected, or when `FORCE_DEMO=1`. Scoring is rule-based (concepts covered per topic, answer length, the interviewer's own lens). Jordan's rules: an average of 3.5 or more raises difficulty and switches interviewer, below 2.5 lowers difficulty and probes the same topic, anything else keeps the level. The UI shows a `DEMO` badge and a "DEMO MODE (deterministic)" banner.
+# UI e2e (Playwright with system Chrome; needs playwright-core installed, e.g. in /workspace/arena-e2e)
+PLUS_ONE=1 node scripts/e2e-ui.mjs http://localhost:5173 demo
+
+# Secret scan of the tree + git history
+./scripts/secret-scan.sh
+```
+
+Bruin pipeline:
+
+```bash
+cd analytics && PATH=$PATH:$HOME/.local/bin ./run_pipeline.sh   # writes analytics/evidence/*
+```
+
+## Sponsor integration status
+
+| Sponsor | Status | Evidence |
+|---|---|---|
+| Bruin | **VERIFIED**. `run_pipeline.sh` exits 0 (5 assets, 45 checks). The scorecard's Bruin panel reads `marts.session_trend` and `marts.candidate_summary` | [analytics/evidence/bruin_run.log](analytics/evidence/bruin_run.log), [mart_row_counts.txt](analytics/evidence/mart_row_counts.txt) |
+| Telem | **VERIFIED**. A real end-to-end call through the app on 2026-11-23 returned 8 sources; they render as links and the top snippet grounds Q1 | [analytics/evidence/telem_call.md](analytics/evidence/telem_call.md), [telem_module_test.txt](analytics/evidence/telem_module_test.txt), screenshot `/workspace/ai-hiring-arena-shots/loop2-telem-sources.png` (outside the repo) |
+| Runware (LLM) | **WIRED, pending verification (mock-tested)**. The code path passes the e2e against `scripts/mock-llm.mjs`; there has been no real Runware call yet | none yet |
+| BAND | NOT IMPLEMENTED | none |
+| Glasser | NOT IMPLEMENTED | none |
+
+## LLM provider and modes
+
+Provider keys stay server-side. They're never sent to the browser or logged. All settings are read **at request time** from the gitignored `server/.env`, which wins over the process environment, so no restart is needed. See `server/.env.example`.
+
+| Setting | Meaning |
+|---|---|
+| `LLM_PROVIDER` | `demo` (the default, used when unset) or `runware` |
+| `RUNWARE_API_KEY` | Runware key. If `LLM_PROVIDER=runware` and this is empty, the app stays in demo |
+| `RUNWARE_MODEL` | Runware AIR model id, default `minimax:m3@0` |
+| `RUNWARE_BASE_URL` | **Tests only.** Points the provider at `scripts/mock-llm.mjs`. Calls to an override URL never switch the badge to LIVE |
+| `TELEM_API_KEY` | Used by `server/telem.ts` for role-context retrieval |
+
+- **DEMO** (default): the deterministic rule-based scorer (concepts covered per topic, answer length, the interviewer's own lens). Jordan's rules: an average of 3.5 or more raises difficulty and switches interviewer, below 2.5 lowers difficulty and probes, anything else keeps the level. Questions already asked in the session (by topic:difficulty id) are never repeated. The banner reads "DEMO MODE · deterministic rule-based scorer (no live LLM call)". Provider errors go to the server and browser console only.
+- **Runware**: OpenAI-compatible `POST https://api.runware.ai/v1/chat/completions` with `Authorization: Bearer $RUNWARE_API_KEY` ([docs](https://runware.ai/docs/tools/compatible-apis)).
+  - Prompts ask for strict JSON. Output is repaired (`<think>` blocks, code fences, trailing commas) and validated, and any step that fails falls back to the deterministic scorer.
+  - Jordan's prompt includes the Telem snippets and all prior question texts. Near-duplicate questions are rejected.
+  - Scorecard quotes must be verbatim. If fewer than 2 are, they're extracted from the answers in code.
+  - The header shows **LIVE · Runware** only after a real call to api.runware.ai succeeds. `/api/health` reports `last_real_success_at`.
+- xAI was removed on purpose (product decision), and no xAI calls are made.
+
+## Telem role context
+
+At interview start the server calls `retrieveRoleContext(company, role)` from `server/telem.ts`, owned by the PM helper.
+- The module is loaded with a dynamic import, only if the file exists, with a 5 s timeout. On any failure the interview continues without context.
+- Only http/https sources are kept. The best sentence from the top snippet is put into the opening question, trimmed at a word boundary.
+- The retrieval is logged as a `decision` event by `jordan` with reason `context retrieved from Telem: N sources`.
+- Sources appear as clickable links in the Designer's `SourcesPanel`, under the decision ledger.
 
 ## Flow and API
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /api/health` | mode `live` or `demo` |
-| `POST /api/session {company, role}` | starts a session and returns Q1 (Maya, metrics, medium) |
+| `GET /api/health` | `mode` (`live` only after a real provider call succeeded), `provider`, `endpoint`, `llm_active`, `last_real_success_at`, Telem status |
+| `POST /api/session {company, role}` | retrieves Telem context, starts a session and returns Q1 (Maya, metrics, medium, grounded in the top snippet) plus `context.sources` |
 | `POST /api/answer {session_id, answer}` | Maya and Alex score in parallel: `{score 1-5, evidence, gap}` |
 | `POST /api/next {session_id}` | Jordan decides the next question, with a reason and a trend of up, down or flat |
 | `POST /api/scorecard {session_id}` | final scorecard with a recommendation, per-agent scores and ≥2 verbatim quotes |
@@ -51,13 +115,6 @@ One JSON object per line in `analytics/data/events.jsonl` (defined in `/workspac
 ```
 
 The backend logs its own events: question, answer (agent `candidate`), 2 assessments per round, Jordan's decision per question, and the scorecard. Decision events must come from maya, alex or jordan, to match the Bruin checks.
-
-## Tests
-
-```bash
-node scripts/e2e-api.mjs [http://localhost:5173]   # strong then weak answer: checks difficulty up, then down/probe, and ≥2 verbatim quotes
-node scripts/mock-xai.mjs 8799                      # test-only fake xAI server to exercise the live code path
-```
 
 ## Ownership
 

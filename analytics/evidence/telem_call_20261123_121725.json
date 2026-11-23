@@ -1,0 +1,205 @@
+{
+  "recorded_at_pt": "2026-11-23 12:17:27 PST",
+  "endpoint": "https://router.telem.ai/v1/search",
+  "method": "POST",
+  "docs": [
+    "https://docs.telem.ai/",
+    "https://docs.telem.ai/api/",
+    "https://docs.telem.ai/authentication/",
+    "https://docs.telem.ai/quickstart/",
+    "https://docs.telem.ai/api/operations/create_search_v1_search_post/"
+  ],
+  "http_status": 200,
+  "request": {
+    "user_input": {
+      "query": "Stripe Product Data Scientist job description interview process role requirements"
+    },
+    "search": {
+      "providers": {
+        "include": [
+          "exa",
+          "brave"
+        ]
+      },
+      "num_results": 5,
+      "tier": "default"
+    },
+    "headers": {
+      "Authorization": "Bearer $TELEM_API_KEY",
+      "Content-Type": "application/json"
+    }
+  },
+  "response": {
+    "instance_id": "use1-prod",
+    "session_id": "c1fd8daa-9caa-4a61-94ba-4a6910996fe6",
+    "interaction_id": "28203608-f346-4fea-a85f-08f3b56b7a31",
+    "trajectory_id": "8e025d5c-5eac-4e53-a6ff-aa2dcc9f11d9",
+    "parent_trajectory_id": null,
+    "trajectory_goal": null,
+    "status": "succeeded",
+    "preprocessor_runs": [
+      {
+        "id": "2938757b-802e-4850-a844-e7833058ef02",
+        "preprocessor_name": "exa",
+        "status": "succeeded",
+        "batch_index": 0,
+        "query": "Stripe Product Data Scientist job description interview process role requirements",
+        "request_payload": {
+          "method": "POST",
+          "url": "https://api.exa.ai/search",
+          "params": null,
+          "json": {
+            "query": "Stripe Product Data Scientist job description interview process role requirements",
+            "numResults": 5,
+            "contents": {
+              "highlights": {
+                "numSentences": 3,
+                "highlightsPerUrl": 1
+              }
+            }
+          },
+          "headers": {
+            "Content-Type": "application/json",
+            "x-api-key": "***"
+          }
+        },
+        "output_payload": {
+          "schema_version": 2,
+          "tier": "default",
+          "fields": [
+            "latency_ms",
+            "rank",
+            "summary",
+            "title",
+            "url",
+            "warnings"
+          ],
+          "results": [
+            {
+              "url": "https://stripe.com/careers/listing/data-scientist/5601879",
+              "title": "Stripe Careers | Data Scientist",
+              "rank": 1,
+              "summary": "# Data Scientist ## Who we are ### About Stripe Stripe is a financial infrastructure platform for businesses. ... ### About the team Our Data Science team partners deeply with teams across Stripe to ensure that our users, our products, and our business have the models, data products, and insights needed to make decisions and grow responsibly. We're looking for data scientists with a passion for analyzing data, building machine learning and statistical models, and running experiments to drive impact. Our work is broad and varied, influencing how our products work (e.g., understanding user needs, preventing fraud, or optimizing charge flows), how our business works (forecasting key outcomes, managing liquidity, and quantifying risk exposure), how our go-to-market motions operate (designing growth experiments, optimizing marketing investments, refining sales processes, and estimating causal effects), and everything in between. We have a variety of Data Science roles and teams across…"
+            },
+            {
+              "url": "https://stripe.com/careers/listing/data-scientist/5895430",
+              "title": "Data Scientist - Stripe Careers",
+              "rank": 2,
+              "summary": "# Data Scientist ## Who we are ... ### About the team Our Data Science team partners deeply with teams across Stripe to ensure that our users, our products, and our business have the models, data products, and insights needed to make decisions and grow responsibly. We're looking for data scientists with a passion for analyzing data, building machine learning and statistical models, and running experiments to drive impact. Our work is broad and varied, influencing how our products work (e.g., understanding user needs, preventing fraud, or optimizing charge flows), how our business works (forecasting key outcomes, managing liquidity, and quantifying risk exposure), how our go-to-market motions operate (designing growth experiments, optimizing marketing investments, refining sales processes, and estimating causal effects), and everything in between. We have a variety of Data Science roles and teams across Stripe and will seek to align you to the most relevant team based on your…"
+            },
+            {
+              "url": "https://www.datainterview.com/blog/stripe-data-scientist-interview",
+              "title": "Stripe Data Scientist Interview: Process & Questions",
+              "rank": 3,
+              "summary": "Dan Lee Data & AI Lead Last update October 26, 2026 ... ## Stripe data scientist interview: quick answers | Question | Short answer | | --- | --- | | How many interview rounds? | A recruiter screen, a take-home data analysis, then a virtual onsite of about four to six interviews. | | What is the take-home? | An open-ended analysis of a provided dataset in SQL or Python, written up as a short report. | | What is in the onsite? | Candidates describe live SQL on payments-style data, a product analytics case, experiment design, and a cross-functional behavioral interview. | | What does the job focus on? | Each data scientist partners with one part of the business, such as Payments, Risk or Growth, using experimentation and modeling to support decisions. | Each round is covered in detail in the interview process section below. ... ## Stripe Data Scientist Interview Process Stripe does not publish a data scientist interview guide; the stages below come from candidate-report guides, which…"
+            },
+            {
+              "url": "https://dataford.io/interview-guides/stripe/data-scientist",
+              "title": "Stripe Data Scientist Interview Questions & Guide 2026",
+              "rank": 4,
+              "summary": "### Interview Process Overview The Data Scientist interview process at Stripe is rigorous, comprehensive, and designed to evaluate both your technical depth and your alignment with the company's culture. Candidates can expect a multi-stage process that transitions from initial screening to a highly structured onsite evaluation. The journey begins with a standard recruiter screen, followed by a conversation with a senior team member or hiring manager to assess your background and alignment with the team's needs. After the initial screens, you will face a technical assessment, which typically includes a timed programming challenge (often via HackerRank) focusing on Python, data manipulation, or applied math. Following the initial technical screen, you will be given a comprehensive take-home case study. This is a defining element of Stripe’s process, reflecting their strong written culture. You will analyze a large dataset, synthesize your findings, and write a formal proposal document.…"
+            },
+            {
+              "url": "https://www.interviewquery.com/interview-guides/stripe-data-scientist",
+              "title": "Stripe Data Scientist Interview Guide (2025) – Process, Questions, Tips",
+              "rank": 5,
+              "summary": "Written by Nathanielle Trina B. Hombre Reviewed by Sakshi Gupta Published March 17, 2026 ... ## What is the interview process like for a data scientist role at Stripe? The Stripe data scientist interview process is multi-stage, structured, and designed to evaluate a candidate’s statistical thinking, coding fluency, and product mindset. Below is a breakdown of each step and what you can expect. ### Application & recruiter screen Once you apply, a recruiter will reach out to assess your motivation for joining Stripe, walk through your resume, and clarify what you are looking for in your next role. Recruiters are looking for candidates who can clearly connect their experience to Stripe’s mission of building the economic infrastructure of the internet and demonstrate impact through data. They want to see curiosity about Stripe’s products and a clear understanding of how data science influences product decisions. Tip: Prepare one concise story about a project where your analysis changed a…"
+            }
+          ],
+          "latency_ms": 1315,
+          "warnings": []
+        },
+        "raw_payload": null,
+        "error": null,
+        "latency_ms": 1315
+      },
+      {
+        "id": "aa0df7bc-b823-443c-b86d-448bd4224cb1",
+        "preprocessor_name": "brave",
+        "status": "succeeded",
+        "batch_index": 0,
+        "query": "Stripe Product Data Scientist job description interview process role requirements",
+        "request_payload": {
+          "method": "GET",
+          "url": "https://api.search.brave.com/res/v1/web/search",
+          "params": {
+            "q": "Stripe Product Data Scientist job description interview process role requirements",
+            "count": 5,
+            "text_decorations": "false"
+          },
+          "json": null,
+          "headers": {
+            "X-Subscription-Token": "***"
+          }
+        },
+        "output_payload": {
+          "schema_version": 2,
+          "tier": "default",
+          "fields": [
+            "latency_ms",
+            "rank",
+            "summary",
+            "title",
+            "url",
+            "warnings"
+          ],
+          "results": [
+            {
+              "url": "https://stripe.com/careers/listing/data-scientist/5895430",
+              "title": "Stripe Careers | Data Scientist",
+              "rank": 1,
+              "summary": "For sales roles, the range provided is the role’s On Target Earnings (“OTE”) range, meaning that the range includes both the sales commissions/sales bonuses target and annual base salary for the role. This salary range may be inclusive of several career levels at Stripe and will be narrowed during the interview process based on a number of factors, including the candidate’s experience, qualifications, and specific location."
+            },
+            {
+              "url": "https://www.datainterview.com/blog/stripe-data-scientist-interview",
+              "title": "Stripe Data Scientist Guide (2026): Job, Salary & Interviews",
+              "rank": 2,
+              "summary": "Come prepared with specifics about your experience shipping production models or owning experimentation frameworks on payment or marketplace products, since that's the kind of scope Stripe uses to justify leveling decisions. ... You'll begin with a conversation with a recruiter to discuss your background, career aspirations, and why you're interested in a Data Scientist role at Stripe."
+            },
+            {
+              "url": "https://stripe.com/jobs/listing/data-scientist/5895430",
+              "title": "Data Scientist",
+              "rank": 3,
+              "summary": "Our work is broad and varied, influencing how our products work (e.g., understanding user needs, preventing fraud, or optimizing charge flows), how our business works (forecasting key outcomes, managing liquidity, and quantifying risk exposure), how our go-to-market motions operate (designing growth experiments, optimizing marketing investments, refining sales processes, and estimating causal effects), and everything in between. We have a variety of Data Science roles and teams across Stripe and will seek to align you to the most relevant team based on your background. We're looking for a variety of Data Scientists to partner with the Product, Finance, Payments, Security, Risk, Growth, and Go-to-Market teams."
+            },
+            {
+              "url": "https://stripe.com/careers/listing/data-scientist-experimental-projects/8209337?gh_jid=8209337",
+              "title": "Stripe Careers | Data Scientist, Experimental Projects",
+              "rank": 4,
+              "summary": "You’ll use data science throughout the discovery and development process, from identifying promising problems and shaping hypotheses to building early solutions and evaluating results."
+            },
+            {
+              "url": "https://stripe.com/careers/listing/data-scientist-payments/8018297",
+              "title": "Stripe Careers | Data Scientist, Payments",
+              "rank": 5,
+              "summary": "Our work is broad and varied, influencing how our products work (e.g., understanding user needs, preventing fraud, or optimizing charge flows), how our business works (forecasting key outcomes, managing liquidity, and quantifying risk exposure), how our go-to-market motions operate (designing growth experiments, optimizing marketing investments, refining sales processes, and estimating causal effects), and everything in between. We have a variety of Data Science roles and teams across Stripe and will seek to align you to the most relevant team based on your background. We’re looking for a Data Scientist to partner with our Local Payment Methods (LPM) engineering and product teams."
+            }
+          ],
+          "latency_ms": 689,
+          "warnings": []
+        },
+        "raw_payload": null,
+        "error": null,
+        "latency_ms": 689
+      }
+    ],
+    "postprocessor_runs": [],
+    "created_at": "2026-11-23T20:17:25.625348Z",
+    "completed_at": "2026-11-23T20:17:27.037316Z",
+    "normalized_schema_version": 2,
+    "missing_snapshots": [],
+    "client_advisory": {
+      "recommended": {
+        "opencode": "0.2.13",
+        "openclaw": "0.2.15",
+        "pi": "0.2.12",
+        "sdk": "0.4.0"
+      }
+    },
+    "routing": null,
+    "pinned_providers": [
+      "exa",
+      "brave"
+    ]
+  }
+}

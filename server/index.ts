@@ -4,12 +4,13 @@ import { TOPICS, topicById, type Difficulty } from './bank.js';
 import { scoreDeterministic, nextDifficulty, type Assessment } from './deterministic.js';
 import { appendEvent, EVENTS_FILE } from './events.js';
 import { runAnalytics } from './analytics.js';
-import { ensureMode, state, tryLLM, model } from './llm.js';
+import { retrieveContext, telemStatus, trimWords, bestSentence, type Source } from './context.js';
+import { ensureMode, state, tryLLM, cfg } from './llm.js';
 
 type Scorer = 'maya' | 'alex';
 interface Question { round: number; asker: Scorer; topic: string; topicLabel: string; difficulty: Difficulty; text: string; reason: string; trend: 'up' | 'down' | 'flat' | 'start'; source: 'llm' | 'deterministic' }
 interface Round { question: Question; answer?: string; assessments?: Assessment[] }
-interface Session { id: string; company: string; role: string; rounds: Round[]; scorecard?: unknown }
+interface Session { id: string; company: string; role: string; rounds: Round[]; scorecard?: unknown; sources: Source[] }
 
 const sessions = new Map<string, Session>();
 const DIFFS: Difficulty[] = ['easy', 'medium', 'hard'];
@@ -52,7 +53,7 @@ function deterministicNext(s: Session, last: Round): Question {
   const a = last.assessments ?? [];
   const avg = a.reduce((n, x) => n + x.score, 0) / Math.max(1, a.length);
   const prevQ = last.question;
-  const difficulty = nextDifficulty(avg, prevQ.difficulty);
+  let difficulty = nextDifficulty(avg, prevQ.difficulty);
   const used = new Set(s.rounds.map((r) => `${r.question.topic}:${r.question.difficulty}`));
   let asker: Scorer;
   let topic: string;
@@ -62,7 +63,7 @@ function deterministicNext(s: Session, last: Round): Question {
     asker = prevQ.asker === 'maya' ? 'alex' : 'maya';
     const order = asker === 'alex' ? ['causal', 'sql'] : ['ab_testing', 'metrics'];
     topic = order.find((t) => !used.has(`${t}:${difficulty}`)) ?? order[0];
-    reason = `Raised difficulty: avg ${avg.toFixed(1)}/5, candidate cited "${a[0]?.evidence.slice(0, 70)}". Handing to ${asker === 'alex' ? 'Alex' : 'Maya'} for a harder ${topicById(topic).label} question.`;
+    reason = `Raised difficulty: avg ${avg.toFixed(1)}/5, candidate cited "${trimWords(a[0]?.evidence ?? '', 90)}". Handing to ${asker === 'alex' ? 'Alex' : 'Maya'} for a harder ${topicById(topic).label} question.`;
   } else if (avg < 2.5) {
     asker = prevQ.asker;
     topic = prevQ.topic;
@@ -73,6 +74,27 @@ function deterministicNext(s: Session, last: Round): Question {
     topic = order.find((t) => !used.has(`${t}:${difficulty}`)) ?? order[0];
     reason = `Kept difficulty: avg ${avg.toFixed(1)}/5, solid but incomplete (${gap}) Switching to ${topicById(topic).label} for breadth.`;
   }
+  // F5: never repeat a question already asked in this session (exclude asked topic:difficulty ids).
+  const asked = new Set(s.rounds.map((r) => `${r.question.topic}:${r.question.difficulty}`));
+  const fresh = (tp: string, d: Difficulty) => !asked.has(`${tp}:${d}`);
+  if (!fresh(topic, difficulty)) {
+    const ownTopics = TOPICS.filter((x) => x.owner === asker).map((x) => x.id);
+    const topicOrder = [topic, ...ownTopics.filter((x) => x !== topic), ...TOPICS.map((x) => x.id).filter((x) => x !== topic && !ownTopics.includes(x))];
+    const di = DIFFS.indexOf(difficulty);
+    // Prefer: not harder than Jordan's target > same topic/asker lens > closest difficulty.
+    const alt = topicOrder.flatMap((tp, ti) => DIFFS.map((d) => ({ tp, d, k: [DIFFS.indexOf(d) > di ? 1 : 0, ti, Math.abs(DIFFS.indexOf(d) - di)] })))
+      .filter((c) => fresh(c.tp, c.d))
+      .sort((x, y) => x.k[0] - y.k[0] || x.k[1] - y.k[1] || x.k[2] - y.k[2])
+      .map((c) => [c.tp, c.d] as const)[0];
+    if (alt) {
+      if (alt[0] !== topic) {
+        const newOwner = topicById(alt[0]).owner;
+        reason = reason.replace(/(Maya|Alex) probes .*$/, '') + ` ${topicById(topic).label} questions at this level already asked, so ${newOwner === 'alex' ? 'Alex' : 'Maya'} probes ${topicById(alt[0]).label} instead.`;
+        asker = newOwner;
+      }
+      topic = alt[0]; difficulty = alt[1];
+    }
+  }
   const t = topicById(topic);
   return {
     round: last.question.round + 1, asker, topic, topicLabel: t.label, difficulty,
@@ -81,13 +103,19 @@ function deterministicNext(s: Session, last: Round): Question {
   };
 }
 
+function similar(a: string, b: string) {
+  const A = new Set(norm(a).split(' ')), B = new Set(norm(b).split(' '));
+  const inter = [...A].filter((w) => B.has(w)).length;
+  return inter / Math.max(1, Math.min(A.size, B.size));
+}
+
 async function decideNext(s: Session, last: Round): Promise<Question> {
   const det = deterministicNext(s, last);
   const raw = (await tryLLM(
     'You are Jordan, the Evaluator. Merge Maya and Alex\'s assessments and decide the next question. Rule: if the average score >= 3.5 raise difficulty; if < 2.5 lower difficulty or probe the same topic; else keep. Respond with STRICT JSON only: {"next_agent":"maya"|"alex","topic":"metrics"|"ab_testing"|"sql"|"causal","difficulty":"easy"|"medium"|"hard","question":"the next interview question, one or two sentences","reason":"one plain-English sentence that references the candidate answer"}',
-    `Company: ${s.company}. Role: ${s.role}.\nLast question (${last.question.topicLabel}, ${last.question.difficulty}): ${last.question.text}\nAnswer: """${last.answer}"""\nAssessments: ${JSON.stringify(last.assessments)}\nAlready asked: ${s.rounds.map((r) => r.question.topic + '/' + r.question.difficulty).join(', ')}`,
+    `Company: ${s.company}. Role: ${s.role}.\nLast question (${last.question.topicLabel}, ${last.question.difficulty}): ${last.question.text}\nAnswer: """${last.answer}"""\nAssessments: ${JSON.stringify(last.assessments)}\nRole context (retrieved sources):\n${s.sources.slice(0, 4).map((x) => `- ${x.title}: ${trimWords(x.snippet, 200)}`).join('\n') || '(none)'}\nPrior questions (do NOT repeat or paraphrase any of these):\n${s.rounds.map((r) => `- ${r.question.text}`).join('\n')}`,
   )) as Record<string, unknown> | null;
-  if (raw && (raw.next_agent === 'maya' || raw.next_agent === 'alex') && TOPICS.some((t) => t.id === raw.topic) && DIFFS.includes(raw.difficulty as Difficulty) && typeof raw.question === 'string' && raw.question.length > 10 && typeof raw.reason === 'string') {
+  if (raw && (raw.next_agent === 'maya' || raw.next_agent === 'alex') && TOPICS.some((t) => t.id === raw.topic) && DIFFS.includes(raw.difficulty as Difficulty) && typeof raw.question === 'string' && raw.question.length > 10 && typeof raw.reason === 'string' && !s.rounds.some((r) => similar(r.question.text, raw.question as string) > 0.8)) {
     const difficulty = raw.difficulty as Difficulty;
     return { ...det, asker: raw.next_agent, topic: raw.topic as string, topicLabel: topicById(raw.topic as string).label, difficulty, text: raw.question, reason: raw.reason, trend: trendOf(last.question.difficulty, difficulty), source: 'llm' };
   }
@@ -151,23 +179,28 @@ async function buildScorecard(s: Session) {
 const app = express();
 app.use(express.json({ limit: '200kb' }));
 
-app.get('/api/health', async (_req, res) => { await ensureMode(); res.json({ ok: true, mode: state.mode, reason: state.reason, key_source: state.keySource, model: state.mode === 'live' ? model() : null, lastError: state.lastError || null, events_file: 'analytics/data/events.jsonl' }); });
+app.get('/api/health', async (_req, res) => { await ensureMode(); res.json({ ok: true, mode: state.mode, provider: state.provider, model: state.model, endpoint: state.endpoint, llm_active: state.llmActive, last_real_success_at: state.lastRealSuccessAt, reason: state.reason, events_file: 'analytics/data/events.jsonl', telem: telemStatus }); });
 
 app.post('/api/events', (req, res) => {
   try { res.json({ ok: true, event: appendEvent(req.body ?? {}) }); }
   catch (e) { res.status(400).json({ ok: false, error: (e as Error).message }); }
 });
 
-app.post('/api/session', (req, res) => {
+app.post('/api/session', async (req, res) => {
   const company = String(req.body?.company || 'Acme').slice(0, 60);
   const role = String(req.body?.role || 'Product Data Scientist').slice(0, 60);
-  const s: Session = { id: crypto.randomUUID(), company, role, rounds: [] };
+  const s: Session = { id: crypto.randomUUID(), company, role, rounds: [], sources: [] };
   sessions.set(s.id, s);
+  const ctx = await retrieveContext(company, role, 5000);
+  s.sources = ctx.sources;
+  if (ctx.provider === 'telem') log(s, 0, 'decision', 'jordan', { reason: `context retrieved from Telem: ${ctx.sources.length} sources`, text: ctx.ok ? ctx.sources.map((x) => x.url).join(' ') : `retrieval failed: ${ctx.error ?? 'no sources'}` });
   const t = topicById('metrics');
-  const q: Question = { round: 1, asker: 'maya', topic: t.id, topicLabel: t.label, difficulty: 'medium', text: fill(t.questions.medium, s), reason: 'Opening: Maya starts with a medium product-metrics question to calibrate.', trend: 'start', source: 'deterministic' };
+  const top = ctx.sources.find((x) => x.snippet.trim().length > 20) ?? ctx.sources[0];
+  const lead = top ? `${company} context (${new URL(top.url).hostname.replace(/^www\./, '')}): "${bestSentence(top.snippet, top.title)}" With that in mind: ` : '';
+  const q: Question = { round: 1, asker: 'maya', topic: t.id, topicLabel: t.label, difficulty: 'medium', text: lead + fill(t.questions.medium, s), reason: top ? `Opening: Maya starts with a medium product-metrics question, grounded in ${ctx.sources.length} Telem sources.` : 'Opening: Maya starts with a medium product-metrics question to calibrate.', trend: 'start', source: 'deterministic' };
   s.rounds.push({ question: q });
   logQuestion(s, q);
-  res.json({ session_id: s.id, mode: state.mode, question: q });
+  res.json({ session_id: s.id, mode: state.mode, question: q, context: { ok: ctx.ok, provider: ctx.provider, sources: ctx.sources, error: ctx.error ?? null, ms: ctx.ms } });
 });
 
 // Submit an answer for the current round: Maya & Alex score in parallel, Jordan picks the next question.

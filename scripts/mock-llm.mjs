@@ -1,5 +1,5 @@
-// Test-only fake OpenAI-compatible server to exercise the live code path (JSON parsing/repair, validation, fallbacks).
-// Usage: node scripts/mock-xai.mjs 8799   then run the API with XAI_BASE_URL=http://localhost:8799/v1 XAI_API_KEY=test
+// Test-only fake OpenAI-compatible chat-completions server (stands in for Runware) to exercise the LLM code path.
+// Usage: node scripts/mock-llm.mjs 8799, then run the API with LLM_PROVIDER=runware RUNWARE_API_KEY=test RUNWARE_BASE_URL=http://localhost:8799/v1
 import http from 'node:http';
 let n = 0;
 http.createServer((req, res) => {
