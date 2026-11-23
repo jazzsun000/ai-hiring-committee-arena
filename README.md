@@ -13,6 +13,7 @@ Every agent decision appears in the **decision ledger** with a reason, and every
 Prerequisites:
 - Node.js 20+ and npm (tested on Node 24.22, npm 11.21).
 - For the analytics pipeline: the Bruin CLI and DuckDB CLI in `~/.local/bin`. Install Bruin with `curl -LsSf https://getbruin.com/install/cli | sh`.
+- First run: `cp analytics/.bruin.yml.example analytics/.bruin.yml` (then `cd analytics && PATH=$PATH:$HOME/.local/bin ./run_pipeline.sh`).
 - `analytics/.bruin.yml` is gitignored by `analytics/.gitignore`, so a fresh clone needs it recreated. See `analytics/README.md`.
 
 ```bash
