@@ -4,6 +4,6 @@
 │ marts.agent_decisions   │ 20        │
 │ marts.answer_scores     │ 24        │
 │ marts.candidate_summary │ 5         │
-│ marts.session_trend     │ 10        │
+│ marts.session_trend     │ 13        │
 │ raw.interview_events    │ 72        │
 └─────────────────────────┴───────────┘

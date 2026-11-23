@@ -34,7 +34,7 @@ columns:
         value: ['strong_hire', 'hire', 'lean_hire', 'lean_no_hire', 'no_hire']
   - name: adaptivity
     type: boolean
-    description: 'True if any later round raised difficulty after a high prior-round score.'
+    description: 'Session adaptivity: TRUE when at least half (majority, ties count as adaptive) of all round transitions (round > 1, incl. +1 rounds) adapted per marts.session_trend.adaptivity.'
     checks:
       - name: not_null
   - name: start_difficulty
@@ -82,8 +82,8 @@ scorecards AS (
 trend AS (
     SELECT
         session_id,
-        MAX(round) AS n_rounds,
-        BOOL_OR(adaptivity) AS adaptivity,
+        COALESCE(MAX(round) FILTER (WHERE avg_score IS NOT NULL), MAX(round)) AS n_rounds,
+        COALESCE(AVG(CASE WHEN adaptivity THEN 1.0 ELSE 0.0 END) FILTER (WHERE round > 1) >= 0.5, FALSE) AS adaptivity,
         arg_min(difficulty, round) AS start_difficulty,
         arg_max(difficulty, round) AS end_difficulty
     FROM marts.session_trend

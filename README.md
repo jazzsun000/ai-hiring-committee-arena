@@ -123,3 +123,17 @@ The backend logs its own events: question, answer (agent `candidate`), 2 assessm
 - Designer: `src/components/arena/*` and `src/styles/arena.css`
 - PM: `analytics/*`. The app only appends to `analytics/data/events.jsonl` and runs `run_pipeline.sh`.
 - Engineer: everything else
+
+## Demo script (Stripe · Data Scientist)
+
+Pick **Stripe** / **Data Scientist**. The opening question cites the Telem-retrieved Stripe listing.
+
+**Round 1 (strong answer → expect ↑ Harder):**
+
+> I'd make time-to-first-payout the north-star metric, since a merchant only gets value from Stripe once money lands in their bank account, and track KYC completion rate as the leading input metric for the new onboarding flow. I'd run a randomized A/B test at the account level with a power calculation up front: with a ~40% baseline KYC completion rate and a 2-point minimum detectable effect, that's roughly 9-10k accounts per arm. I'd use CUPED with pre-signup traffic as the covariate to cut variance, run an SRM check on the assignment split before reading any results, and hold guardrail metrics on fraud/dispute rate, support tickets per new account and payment failure rate. I'd also segment by country, because KYC requirements differ.
+
+**Round 2 (weak answer → expect ↓ Easier / probing):**
+
+> I'd just compare revenue before and after the change.
+
+Then press **+1 round** to see the easier probe, or **Finish interview** for the scorecard and the Bruin panel. Adaptivity is computed per round transition: (avg ≥ 3.5 and harder) OR (avg ≤ 2.5 and easier) OR (in between and same level). A session counts as adaptive when at least half of its transitions adapted.

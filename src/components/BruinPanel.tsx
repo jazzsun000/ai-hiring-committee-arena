@@ -1,4 +1,4 @@
-export interface TrendRow { round: number; avg_score: number; difficulty: string; prev_difficulty: string | null; difficulty_rose: boolean; adaptivity: boolean }
+export interface TrendRow { round: number; avg_score: number | null; difficulty: string; prev_difficulty: string | null; difficulty_rose: boolean; adaptivity: boolean }
 export interface BruinResult { ok: boolean; ms: number; session_trend: TrendRow[]; candidate_summary: { adaptivity: boolean; start_difficulty: string; end_difficulty: string; overall_avg_score: number; n_rounds: number } | null }
 
 export function BruinPanel({ data, loading, error, onRetry }: { data: BruinResult | null; loading: boolean; error: string | null; onRetry: () => void }) {
@@ -15,7 +15,7 @@ export function BruinPanel({ data, loading, error, onRetry }: { data: BruinResul
               {data.session_trend.map((r) => (
                 <tr key={r.round}>
                   <td>R{r.round}</td>
-                  <td className="mono">{Number(r.avg_score).toFixed(1)}/5</td>
+                  <td className="mono">{r.avg_score == null ? 'not answered' : `${Number(r.avg_score).toFixed(1)}/5`}</td>
                   <td>{r.prev_difficulty ? `${r.prev_difficulty} → ${r.difficulty}` : r.difficulty}</td>
                   <td>{r.round === 1 ? '—' : r.adaptivity ? 'yes' : 'no'}</td>
                 </tr>
