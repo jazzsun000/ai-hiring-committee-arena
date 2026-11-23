@@ -1,0 +1,32 @@
+{
+  "request": {
+    "endpoint": "https://api.runware.ai/v1/chat/completions",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer [REDACTED]",
+      "Content-Type": "application/json"
+    },
+    "model": "minimax:m3@0",
+    "max_tokens": 1500,
+    "messages_count": 2
+  },
+  "started_at": "2026-11-23T20:35:31.954Z",
+  "finished_at": "2026-11-23T20:35:37.925Z",
+  "latency_ms": 5971,
+  "http_status": 200,
+  "error": null,
+  "response_trimmed": {
+    "id": "chatcmpl-a5cc71125ae9e6b5c2b9bebf",
+    "model": "minimax:m3@0",
+    "usage": {
+      "prompt_tokens": 239,
+      "completion_tokens": 384,
+      "total_tokens": 623,
+      "completion_tokens_details": {
+        "reasoning_tokens": 268
+      }
+    },
+    "finish_reason": "stop",
+    "content": "<think>We need answer? User provides Question and Answer likely wants perhaps evaluate? Need infer. They state \"Question: How would you measure whether a new onboarding flow worked? Answer: ...\". Maybe expects output? Could be asking answer question, with supplied answer perhaps need elaborate? We should respond likely concise and perhaps critique/expand. Need determine intent. It could be benchmark prompt where desired exact answer given. They may want us to simply answer perhaps use given answer. We should articulate measurement framework: define activation event, A/B randomization, power ca"
+  }
+}

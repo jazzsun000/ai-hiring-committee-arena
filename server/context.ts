@@ -59,3 +59,14 @@ export function bestSentence(snippet: string, title: string): string {
   const pick = sents.find((x) => /team|partner|experiment|product|data scien|metric|analy/i.test(x)) ?? sents[0];
   return trimWords(pick ?? title, 160);
 }
+
+/** One short sentence (≤ ~120 chars) paraphrasing the top source, for the opening bubble. Full snippet stays in SourcesPanel. */
+export function openingLead(company: string, top: Source): string {
+  let host = '';
+  try { host = new URL(top.url).hostname.replace(/^www\./, ''); } catch { /* ignore */ }
+  const own = host.includes(company.toLowerCase().replace(/[^a-z0-9]/g, ''));
+  const label = own ? `${company}'s listing` : `A ${company} interview guide`;
+  let sent = bestSentence(top.snippet, top.title).replace(/…$/, '').replace(/^(about (the|us|our)[^.]*?\s(?=our|we|the)\s*)/i, '').replace(/^our\s+/i, 'the ').replace(/^about\s+(the\s+)?\S+\s+(?=[A-Z])/i, '');
+  sent = trimWords(sent.charAt(0).toLowerCase() + sent.slice(1), 120 - label.length - 8).replace(/[.…]+$/, '');
+  return `${label} says ${sent}…`;
+}

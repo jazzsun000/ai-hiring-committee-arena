@@ -4,7 +4,7 @@ import { TOPICS, topicById, type Difficulty } from './bank.js';
 import { scoreDeterministic, nextDifficulty, type Assessment } from './deterministic.js';
 import { appendEvent, EVENTS_FILE } from './events.js';
 import { runAnalytics } from './analytics.js';
-import { retrieveContext, telemStatus, trimWords, bestSentence, type Source } from './context.js';
+import { retrieveContext, telemStatus, trimWords, openingLead, type Source } from './context.js';
 import { ensureMode, state, tryLLM, cfg } from './llm.js';
 
 type Scorer = 'maya' | 'alex';
@@ -39,6 +39,7 @@ async function assess(agent: Scorer, s: Session, r: Round): Promise<Assessment> 
   const raw = (await tryLLM(
     `${PERSONA[agent]} Score the candidate independently. Respond with STRICT JSON only: {"score": integer 1-5, "evidence": "an EXACT verbatim substring copied from the candidate answer", "gap": "one sentence on what is missing"}.`,
     `Company: ${s.company}. Role: ${s.role}.\nQuestion (${r.question.topicLabel}, ${r.question.difficulty}): ${r.question.text}\nCandidate answer:\n"""${answer}"""`,
+    400,
   )) as { score?: unknown; evidence?: unknown; gap?: unknown } | null;
   const score = clampScore(raw?.score);
   if (raw && score && typeof raw.gap === 'string') {
@@ -112,8 +113,9 @@ function similar(a: string, b: string) {
 async function decideNext(s: Session, last: Round): Promise<Question> {
   const det = deterministicNext(s, last);
   const raw = (await tryLLM(
-    'You are Jordan, the Evaluator. Merge Maya and Alex\'s assessments and decide the next question. Rule: if the average score >= 3.5 raise difficulty; if < 2.5 lower difficulty or probe the same topic; else keep. Respond with STRICT JSON only: {"next_agent":"maya"|"alex","topic":"metrics"|"ab_testing"|"sql"|"causal","difficulty":"easy"|"medium"|"hard","question":"the next interview question, one or two sentences","reason":"one plain-English sentence that references the candidate answer"}',
+    'You are Jordan, the Evaluator. Merge Maya and Alex\'s assessments and decide the next question. Rule: if the average score >= 3.5 raise difficulty; if < 2.5 lower difficulty or probe the same topic; else keep. Respond with STRICT JSON only: {"next_agent":"maya"|"alex","topic":"metrics"|"ab_testing"|"sql"|"causal","difficulty":"easy"|"medium"|"hard","question":"the next interview question, 1-2 sentences, at most ~240 characters; may reference the role context briefly","reason":"one plain-English sentence that references the candidate answer"}',
     `Company: ${s.company}. Role: ${s.role}.\nLast question (${last.question.topicLabel}, ${last.question.difficulty}): ${last.question.text}\nAnswer: """${last.answer}"""\nAssessments: ${JSON.stringify(last.assessments)}\nRole context (retrieved sources):\n${s.sources.slice(0, 4).map((x) => `- ${x.title}: ${trimWords(x.snippet, 200)}`).join('\n') || '(none)'}\nPrior questions (do NOT repeat or paraphrase any of these):\n${s.rounds.map((r) => `- ${r.question.text}`).join('\n')}`,
+    500,
   )) as Record<string, unknown> | null;
   if (raw && (raw.next_agent === 'maya' || raw.next_agent === 'alex') && TOPICS.some((t) => t.id === raw.topic) && DIFFS.includes(raw.difficulty as Difficulty) && typeof raw.question === 'string' && raw.question.length > 10 && typeof raw.reason === 'string' && !s.rounds.some((r) => similar(r.question.text, raw.question as string) > 0.8)) {
     const difficulty = raw.difficulty as Difficulty;
@@ -196,11 +198,11 @@ app.post('/api/session', async (req, res) => {
   if (ctx.provider === 'telem') log(s, 0, 'decision', 'jordan', { reason: `context retrieved from Telem: ${ctx.sources.length} sources`, text: ctx.ok ? ctx.sources.map((x) => x.url).join(' ') : `retrieval failed: ${ctx.error ?? 'no sources'}` });
   const t = topicById('metrics');
   const top = ctx.sources.find((x) => x.snippet.trim().length > 20) ?? ctx.sources[0];
-  const lead = top ? `${company} context (${new URL(top.url).hostname.replace(/^www\./, '')}): "${bestSentence(top.snippet, top.title)}" With that in mind: ` : '';
+  const lead = top ? `${openingLead(company, top)} ` : '';
   const q: Question = { round: 1, asker: 'maya', topic: t.id, topicLabel: t.label, difficulty: 'medium', text: lead + fill(t.questions.medium, s), reason: top ? `Opening: Maya starts with a medium product-metrics question, grounded in ${ctx.sources.length} Telem sources.` : 'Opening: Maya starts with a medium product-metrics question to calibrate.', trend: 'start', source: 'deterministic' };
   s.rounds.push({ question: q });
   logQuestion(s, q);
-  res.json({ session_id: s.id, mode: state.mode, question: q, context: { ok: ctx.ok, provider: ctx.provider, sources: ctx.sources, error: ctx.error ?? null, ms: ctx.ms } });
+  res.json({ session_id: s.id, mode: state.mode, question: q, context: { ok: ctx.ok, provider: ctx.provider, sources: ctx.sources, error: ctx.error ?? null, ms: ctx.ms }, timings: { telem_ms: ctx.ms } });
 });
 
 // Submit an answer for the current round: Maya & Alex score in parallel, Jordan picks the next question.
@@ -213,9 +215,12 @@ app.post('/api/answer', async (req, res) => {
   if (r.answer) return res.status(409).json({ error: 'round already answered' });
   r.answer = answer.slice(0, 4000);
   log(s, r.question.round, 'answer', 'candidate', { topic: r.question.topic, difficulty: r.question.difficulty, text: r.answer });
-  r.assessments = await Promise.all((['maya', 'alex'] as Scorer[]).map((a) => assess(a, s, r)));
+  const t0 = Date.now();
+  const timed = await Promise.all((['maya', 'alex'] as Scorer[]).map(async (a) => { const st = Date.now(); const out = await assess(a, s, r); return { out, ms: Date.now() - st }; }));
+  r.assessments = timed.map((x) => x.out);
+  const timings = { maya_ms: timed[0].ms, alex_ms: timed[1].ms, scoring_total_ms: Date.now() - t0 };
   for (const a of r.assessments) log(s, r.question.round, 'assessment', a.agent, { topic: r.question.topic, difficulty: r.question.difficulty, score: a.score, reason: a.gap, text: a.evidence });
-  res.json({ round: r.question.round, assessments: r.assessments, mode: state.mode });
+  res.json({ round: r.question.round, assessments: r.assessments, mode: state.mode, timings });
 });
 
 app.post('/api/next', async (req, res) => {
@@ -223,16 +228,20 @@ app.post('/api/next', async (req, res) => {
   if (!s) return res.status(404).json({ error: 'unknown session' });
   const last = s.rounds[s.rounds.length - 1];
   if (!last.assessments) return res.status(409).json({ error: 'answer current round first' });
+  const t0 = Date.now();
   const q = await decideNext(s, last);
+  const jordan_ms = Date.now() - t0;
   s.rounds.push({ question: q });
   logQuestion(s, q);
-  res.json({ question: q, mode: state.mode });
+  res.json({ question: q, mode: state.mode, timings: { jordan_ms } });
 });
 
 app.post('/api/scorecard', async (req, res) => {
   const s = sessions.get(req.body?.session_id);
   if (!s) return res.status(404).json({ error: 'unknown session' });
-  res.json(await buildScorecard(s));
+  const t0 = Date.now();
+  const card = await buildScorecard(s);
+  res.json({ ...card, timings: { scorecard_ms: Date.now() - t0 } });
 });
 
 app.post('/api/analytics/run', async (req, res) => {

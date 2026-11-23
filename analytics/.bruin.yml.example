@@ -1,0 +1,9 @@
+# Copy to analytics/.bruin.yml (gitignored): cp analytics/.bruin.yml.example analytics/.bruin.yml
+# No credentials needed: DuckDB is a local file. Adjust the path if the repo lives elsewhere.
+default_environment: default
+environments:
+  default:
+    connections:
+      duckdb:
+        - name: "duckdb-default"
+          path: "/workspace/ai-hiring-arena/analytics/arena.duckdb"

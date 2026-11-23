@@ -1,0 +1,39 @@
+{
+  "request": {
+    "endpoint": "https://api.runware.ai/v1/chat/completions",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer [REDACTED]",
+      "Content-Type": "application/json"
+    },
+    "model": "openai:gpt@5",
+    "max_tokens": 400,
+    "messages_count": 2
+  },
+  "started_at": "2026-11-23T20:35:29.992Z",
+  "finished_at": "2026-11-23T20:35:31.887Z",
+  "latency_ms": 1895,
+  "http_status": 200,
+  "error": null,
+  "response_trimmed": {
+    "id": "chatcmpl-rw-ed25b64312427bb7249ff18d",
+    "model": "openai:gpt@5",
+    "usage": {
+      "prompt_tokens": 81,
+      "completion_tokens": 73,
+      "total_tokens": 154,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "audio_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      }
+    },
+    "finish_reason": "stop",
+    "content": "{\"score\":4,\"evidence\":\"\\\"I'd define success as 7-day activation and run an A/B test with a power calc and guardrail metrics.\\\"\", \"gap\":\"Could mention specific activation metrics/events, qualitative feedback, and downstream impact (retention, revenue) or monitoring for experiment duration and segmentation.\"}"
+  }
+}

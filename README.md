@@ -60,7 +60,7 @@ cd analytics && PATH=$PATH:$HOME/.local/bin ./run_pipeline.sh   # writes analyti
 |---|---|---|
 | Bruin | **VERIFIED**. `run_pipeline.sh` exits 0 (5 assets, 45 checks). The scorecard's Bruin panel reads `marts.session_trend` and `marts.candidate_summary` | [analytics/evidence/bruin_run.log](analytics/evidence/bruin_run.log), [mart_row_counts.txt](analytics/evidence/mart_row_counts.txt) |
 | Telem | **VERIFIED**. A real end-to-end call through the app on 2026-11-23 returned 8 sources; they render as links and the top snippet grounds Q1 | [analytics/evidence/telem_call.md](analytics/evidence/telem_call.md), [telem_module_test.txt](analytics/evidence/telem_module_test.txt), screenshot `/workspace/ai-hiring-arena-shots/loop2-telem-sources.png` (outside the repo) |
-| Runware (LLM) | **WIRED, pending verification (mock-tested)**. The code path passes the e2e against `scripts/mock-llm.mjs`; there has been no real Runware call yet | none yet |
+| Runware (LLM) | **VERIFIED** (real calls, 12:35 PM PT Nov 23). Model `openai:gpt@5` via `RUNWARE_MODEL`: full live e2e with 7/7 LLM steps succeeding and 0 fallbacks. Measured: Maya+Alex in parallel 1.6–3.1 s per round, Jordan 2.2–2.3 s, scorecard 3.0 s, about 3.9–5.3 s per round. The default `minimax:m3@0` returns HTTP 200 but is a thinking model: 6–10 s on a tiny prompt and over 45 s on the real prompts, so every step timed out and fell back | [runware_call_openai_gpt5](analytics/evidence/runware_call_openai_gpt5.md), [runware_call_minimax_m3](analytics/evidence/runware_call_minimax_m3.md), `/workspace/ai-hiring-arena-shots/loop3-live-*` |
 | BAND | NOT IMPLEMENTED | none |
 | Glasser | NOT IMPLEMENTED | none |
 
@@ -72,7 +72,8 @@ Provider keys stay server-side. They're never sent to the browser or logged. All
 |---|---|
 | `LLM_PROVIDER` | `demo` (the default, used when unset) or `runware` |
 | `RUNWARE_API_KEY` | Runware key. If `LLM_PROVIDER=runware` and this is empty, the app stays in demo |
-| `RUNWARE_MODEL` | Runware AIR model id, default `minimax:m3@0` |
+| `RUNWARE_MODEL` | Runware AIR model id. The code default is `minimax:m3@0`, but use `openai:gpt@5` (verified fast). `openai:*` models are sent `max_completion_tokens` and `reasoning_effort: minimal` |
+| `LLM_TIMEOUT_MS` | Per-call timeout, default 45000 |
 | `RUNWARE_BASE_URL` | **Tests only.** Points the provider at `scripts/mock-llm.mjs`. Calls to an override URL never switch the badge to LIVE |
 | `TELEM_API_KEY` | Used by `server/telem.ts` for role-context retrieval |
 

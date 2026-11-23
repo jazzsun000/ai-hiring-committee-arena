@@ -1,6 +1,8 @@
 session_id,n_rounds,n_answers,n_assessments,overall_avg_score,min_score,max_score,scorecard_overall,recommendation,scorecard_reason,adaptivity,start_difficulty,end_difficulty,topics
-1d83d4c0-8628-484d-a7a9-c91a7c20d741,2,2,4,3,1,5,3,lean_hire,Recommendation: lean_hire,true,medium,hard,"causal, metrics"
-72cd15af-91ba-48f4-aab1-ad65504ec551,2,2,4,3,1,5,3,lean_hire,Recommendation: lean_hire,true,medium,hard,"causal, metrics"
-9adc4c81-ceba-4bb9-b68a-148ab6363a77,2,2,4,3,1,5,3,lean_hire,Recommendation: lean_hire,true,medium,hard,"causal, metrics"
+031edb15-bc7e-472e-bcac-3cde659cc48d,2,2,4,3,1,5,3,lean_hire,Recommendation: lean_hire,true,medium,hard,"causal, metrics"
+7e0ebfd9-9e77-4668-9ce9-023a33ea1c83,2,2,4,3,1,5,3,lean_hire,Recommendation: lean_hire,true,medium,hard,"causal, metrics"
+7ff2e59a-0850-448c-8306-1b9552a134ac,2,2,4,3,1,5,3,lean_hire,Recommendation: lean_hire,true,medium,hard,"causal, metrics"
+8e38f45f-d0a3-45aa-b8a6-d77bfcc2b0ad,2,2,4,2.25,1,4,2.3,lean_no_hire,Recommendation: lean_no_hire,true,medium,hard,"ab_testing, metrics"
+b484029a-5f7c-4f9c-8d4b-fd90a8ed81d6,2,2,4,2.25,1,4,2.3,lean_no_hire,Recommendation: lean_no_hire,true,medium,hard,"ab_testing, metrics"
 synthetic-demo-001,2,2,6,4.33,4,5,4.3,hire,Recommendation: hire,true,medium,hard,"causal, metrics"
 synthetic-demo-002,2,2,6,2.33,2,3,2.3,lean_no_hire,Recommendation: lean_no_hire,false,medium,easy,"ab_testing, sql"

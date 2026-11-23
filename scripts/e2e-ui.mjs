@@ -19,7 +19,7 @@ await page.getByTestId('answer').waitFor();
 const links = page.locator('[data-testid=sources] a');
 console.log('telem source links:', await links.count(), '| first:', await links.first().getAttribute('href'), '| target:', await links.first().getAttribute('target'), '| rel:', await links.first().getAttribute('rel'));
 console.log('banner text:', await page.getByTestId('demo-banner').innerText().catch(() => '(none)'));
-console.log('Q1 bubble includes Telem snippet:', /context \(/.test(await page.locator('.arena-bubble-text').innerText()));
+console.log('Q1 bubble includes Telem snippet:', /(listing|guide) says/.test(await page.locator('.arena-bubble-text').innerText()));
 await page.screenshot({ path: `${OUT}/${TAG}-telem-sources.png`, fullPage: true });
 console.log('chip R1:', (await page.getByTestId('question-chip').innerText()).replace(/\n/g, ' | '));
 await page.screenshot({ path: `${OUT}/${TAG}-02-q1.png`, fullPage: true });

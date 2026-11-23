@@ -1,9 +1,9 @@
 ┌─────────────────────────┬───────────┐
 │ MART                    │ ROW_COUNT │
 ├─────────────────────────┼───────────┤
-│ marts.agent_decisions   │ 13        │
-│ marts.answer_scores     │ 24        │
-│ marts.candidate_summary │ 5         │
-│ marts.session_trend     │ 10        │
-│ raw.interview_events    │ 62        │
+│ marts.agent_decisions   │ 28        │
+│ marts.answer_scores     │ 32        │
+│ marts.candidate_summary │ 7         │
+│ marts.session_trend     │ 14        │
+│ raw.interview_events    │ 101       │
 └─────────────────────────┴───────────┘

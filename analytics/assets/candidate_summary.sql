@@ -114,6 +114,7 @@ SELECT
     tp.topics
 FROM scores s
 LEFT JOIN answers a ON s.session_id = a.session_id
-LEFT JOIN scorecards sc ON s.session_id = sc.session_id
+-- Only completed interviews (with a scorecard event); abandoned sessions are excluded so they cannot fail checks.
+INNER JOIN scorecards sc ON s.session_id = sc.session_id
 LEFT JOIN trend t ON s.session_id = t.session_id
 LEFT JOIN topics tp ON s.session_id = tp.session_id

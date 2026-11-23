@@ -61,7 +61,7 @@ export async function ensureMode(force = false): Promise<void> {
   if (p.name === 'demo') { Object.assign(state, { mode: 'demo', llmActive: false, reason: 'LLM_PROVIDER unset or demo' }); return; }
   if (!p.key) { Object.assign(state, { mode: 'demo', llmActive: false, reason: 'LLM_PROVIDER=runware but RUNWARE_API_KEY is empty' }); return; }
   try {
-    await chatJSON('Reply with strict JSON only.', 'Return {"ok": true}', 20, p);
+    await chatJSON('Reply with strict JSON only.', 'Return {"ok": true}', 200, p);
     state.llmActive = true;
     if (p.testOverride) { state.mode = 'demo'; state.reason = 'runware via TEST override endpoint (not a real call; badge stays DEMO)'; }
     else { state.mode = 'live'; state.lastRealSuccessAt = new Date().toISOString(); state.reason = `Runware ${p.model} verified by a real call`; }
@@ -87,7 +87,7 @@ export function extractJSON(raw: string): unknown {
 async function chatJSON(system: string, user: string, maxTokens = 400, p = provider()): Promise<unknown> {
   if (p.name === 'demo' || !p.key) throw new Error('no provider');
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 20000);
+  const t = setTimeout(() => ctrl.abort(), Number(process.env.LLM_TIMEOUT_MS || 45000));
   try {
     const res = await fetch(`${p.base}/chat/completions`, {
       method: 'POST',
@@ -95,8 +95,10 @@ async function chatJSON(system: string, user: string, maxTokens = 400, p = provi
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${p.key}` },
       body: JSON.stringify({
         model: p.model,
-        temperature: 0.3,
-        max_tokens: maxTokens,
+        // OpenAI reasoning models on Runware reject temperature/max_tokens; use their params instead.
+        ...(p.model.startsWith('openai:')
+          ? { max_completion_tokens: maxTokens, reasoning_effort: 'minimal' }
+          : { temperature: 0.3, max_tokens: maxTokens }),
         messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
       }),
     });
