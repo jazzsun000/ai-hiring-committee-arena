@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Arena, DecisionLedger, Scorecard, QuestionChip, AgentChip, SourcesPanel, AGENTS } from './components/arena';
 import type { AgentId, AvatarState, LedgerRow, DifficultyDelta } from './components/arena';
 import { BruinPanel, type BruinResult } from './components/BruinPanel';
-import { speak, stopSpeech, primeSpeech, ttsSupported, micSupported, createRecognizer, type Recognizer, type Speaker } from './voice';
+import { speak, stopSpeech, resumeSpeech, ttsSupported, micSupported, createRecognizer, type Recognizer, type Speaker } from './voice';
 import { api, type Assessment, type Health, type Question, type ScorecardData, type Source } from './api';
 
 const DEFAULT_ROUNDS = 2;
@@ -144,14 +144,29 @@ export default function App() {
   const spokenBy: Speaker | null = phase === 'asking' && current ? current.question.asker : phase === 'done' && card ? 'jordan' : null;
   useEffect(() => {
     if (!voiceOn || !spokenText || !spokenBy) return;
-    speak(spokenBy, spokenText, { start: () => setSpeaking(spokenBy), end: () => setSpeaking(null) });
+    speak(spokenBy, spokenText, { start: () => setSpeaking(spokenBy), end: () => setSpeaking((cur) => (cur === spokenBy ? null : cur)) });
   }, [voiceOn, spokenText, spokenBy]);
   useEffect(() => { if (phase !== 'asking') stopMic(); }, [phase]);
-  const shownStates = speaking ? { ...states, [speaking]: 'speaking' as AvatarState } : states;
+  // With voice on, "Speaking" follows real utterance start/end events only.
+  const shownStates: Record<AgentId, AvatarState> = voiceOn
+    ? (Object.fromEntries((Object.keys(states) as AgentId[]).map((id) => [id, id === speaking ? 'speaking' : states[id] === 'speaking' ? 'idle' : states[id]])) as Record<AgentId, AvatarState>)
+    : states;
+  const voiceEvents = (sp: Speaker) => ({ start: () => setSpeaking(sp), end: () => setSpeaking((cur) => (cur === sp ? null : cur)) });
   const toggleVoice = () => {
-    if (voiceOn) { stopSpeech(); setSpeaking(null); setVoiceOn(false); }
-    else { primeSpeech(); setVoiceOn(true); }
+    if (voiceOn) { stopSpeech(); setSpeaking(null); setVoiceOn(false); return; }
+    // Audible utterance inside the tap itself unlocks iOS speech for later (non-gesture) questions.
+    setVoiceOn(true);
+    const sp: Speaker = spokenBy ?? 'jordan';
+    speak(sp, spokenText || 'Voice on.', voiceEvents(sp), true);
   };
+  const replay = (sp: Speaker, text: string) => speak(sp, text, voiceEvents(sp), true);
+  const gestureKick = () => { if (voiceOn) resumeSpeech(); };
+  const bubbleNode = bubble ? (
+    <>
+      {bubble}
+      {ttsSupported && activeAgent && <><br /><button type="button" className="btn replay-btn" data-testid="replay-bubble" onClick={() => replay(activeAgent as Speaker, spokenText || String(bubble))}>🔊 Replay</button></>}
+    </>
+  ) : undefined;
   function stopMic() { recRef.current?.stop(); recRef.current = null; setListening(false); }
   const toggleMic = () => {
     if (listening) return stopMic();
@@ -201,7 +216,7 @@ export default function App() {
       <Arena
         activeAgent={activeAgent}
         states={shownStates}
-        bubble={bubble}
+        bubble={bubbleNode}
         statusLabels={statusLabels}
         caption={current ? `Round ${current.question.round} of ${targetRounds} · ${company} · ${role}` : 'Maya (Hiring Manager) · Alex (Technical) · Jordan (Evaluator)'}
       />
@@ -223,7 +238,7 @@ export default function App() {
             <div className="setup">
               <label>Company<select value={company} onChange={(e) => setCompany(e.target.value)} data-testid="company">{COMPANIES.map((c) => <option key={c}>{c}</option>)}</select></label>
               <label>Role<select value={role} onChange={(e) => setRole(e.target.value)} data-testid="role">{ROLES.map((r) => <option key={r}>{r}</option>)}</select></label>
-              <button className="btn primary" onClick={start} data-testid="start">Start interview</button>
+              <button className="btn primary" onClick={() => { gestureKick(); start(); }} data-testid="start">Start interview</button>
             </div>
           )}
 
@@ -232,7 +247,7 @@ export default function App() {
               <div className="transcript">
                 {rounds.map((r) => (
                   <div key={r.question.round} className="turn">
-                    <div className="turn-q"><AgentChip agent={r.question.asker} /> <span className="muted">R{r.question.round}</span> {r.question.text}</div>
+                    <div className="turn-q"><AgentChip agent={r.question.asker} /> <span className="muted">R{r.question.round}</span> {r.question.text}{ttsSupported && <> <button type="button" className="btn replay-btn" data-testid={`replay-q-${r.question.round}`} onClick={() => replay(r.question.asker, r.question.text)} aria-label="Replay question">🔊 Replay</button></>}</div>
                     {r.answer && <div className="turn-a"><b>You:</b> {r.answer}</div>}
                     {r.assessments && (
                       <div className="scores">
@@ -252,7 +267,7 @@ export default function App() {
                   <textarea ref={answerRef} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Type your answer…" rows={6} data-testid="answer" />
                   <div className="answer-actions">
                     {micSupported && <button type="button" className={`btn mic-btn${listening ? ' primary' : ''}`} onClick={toggleMic} aria-pressed={listening} data-testid="mic" title="Dictate with your browser's speech recognition">{listening ? '⏹ Stop dictation' : '🎤 Speak answer'}</button>}
-                    <button className="btn primary" onClick={() => { stopMic(); submit(); }} disabled={!draft.trim()} data-testid="submit">Submit answer</button>
+                    <button className="btn primary" onClick={() => { gestureKick(); stopMic(); submit(); }} disabled={!draft.trim()} data-testid="submit">Submit answer</button>
                   </div>
                 </div>
               )}

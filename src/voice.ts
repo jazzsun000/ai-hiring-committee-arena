@@ -6,9 +6,9 @@ const synth: SpeechSynthesis | null = typeof window !== 'undefined' && 'speechSy
 export const ttsSupported = !!synth;
 
 const PROFILE: Record<Speaker, { pitch: number; rate: number; prefer: RegExp; slot: number }> = {
-  maya: { pitch: 1.15, rate: 1.0, prefer: /samantha|zira|karen|victoria|female|google us english/i, slot: 0 },
-  alex: { pitch: 0.85, rate: 1.03, prefer: /daniel|david|fred|aaron|male|google uk english male/i, slot: 1 },
-  jordan: { pitch: 1.0, rate: 0.95, prefer: /moira|tessa|serena|rishi|google uk english female/i, slot: 2 },
+  maya: { pitch: 1.1, rate: 1.0, prefer: /samantha|zira|karen|victoria|female|google us english/i, slot: 0 },
+  alex: { pitch: 0.9, rate: 1.0, prefer: /daniel|david|fred|aaron|male|google uk english male/i, slot: 1 },
+  jordan: { pitch: 1.0, rate: 1.0, prefer: /moira|tessa|serena|rishi|google uk english female/i, slot: 2 },
 };
 
 function voiceFor(sp: Speaker): SpeechSynthesisVoice | undefined {
@@ -20,26 +20,31 @@ function voiceFor(sp: Speaker): SpeechSynthesisVoice | undefined {
   return pool.find((v) => PROFILE[sp].prefer.test(v.name) && !others.some((r) => r.test(v.name))) ?? pool[PROFILE[sp].slot % pool.length];
 }
 
-/** iOS needs speechSynthesis to be started from a user gesture once; call this from a tap. */
-export function primeSpeech() {
-  if (!synth) return;
-  try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); } catch { /* ignore */ }
-}
+/** Call synchronously inside a tap handler: iOS Safari only allows speech that starts from a user gesture. */
+export function resumeSpeech() { try { synth?.resume(); } catch { /* ignore */ } }
 
 export function stopSpeech() { synth?.cancel(); }
 
-export function speak(sp: Speaker, text: string, on: { start?: () => void; end?: () => void } = {}) {
+/**
+ * Speak `text` as `sp`. Pass gesture=true when called directly from a click/tap handler: then speak() runs
+ * synchronously (required by iOS). Otherwise a short delay after cancel() avoids the iOS bug where a speak()
+ * in the same tick as cancel() is dropped. Never waits for voiceschanged; uses the default voice if none listed.
+ */
+export function speak(sp: Speaker, text: string, on: { start?: () => void; end?: () => void } = {}, gesture = false) {
   if (!synth || !text.trim()) return;
   synth.cancel();
   const u = new SpeechSynthesisUtterance(text);
   const v = voiceFor(sp);
-  if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
+  if (v) u.voice = v;
+  u.lang = v?.lang || 'en-US';
+  u.volume = 1;
   u.pitch = PROFILE[sp].pitch;
   u.rate = PROFILE[sp].rate;
   u.onstart = () => on.start?.();
   u.onend = () => on.end?.();
   u.onerror = () => on.end?.();
-  synth.speak(u);
+  const go = () => { try { synth.resume(); synth.speak(u); } catch { on.end?.(); } };
+  if (gesture) go(); else setTimeout(go, 50);
 }
 
 // Minimal typing for SpeechRecognition (not in the TS DOM lib everywhere).

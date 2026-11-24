@@ -39,7 +39,7 @@ export function Arena({ activeAgent, states, bubble, caption, names, statusLabel
                 {isActive && bubble && (
                   <div className="arena-bubble" role="status" aria-live="polite">
                     <span className="arena-bubble-name">{names?.[id] ?? AGENTS[id].name}</span>
-                    <div className="arena-bubble-text">{bubble}</div>
+                    <div className="arena-bubble-text" key={`${activeAgent}-${caption ?? ""}`}>{bubble}</div>
                   </div>
                 )}
               </div>
