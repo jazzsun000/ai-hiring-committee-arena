@@ -1,0 +1,16 @@
+import { chromium } from 'playwright-core';
+const U = process.argv[2], A1 = process.argv[3];
+const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+await p.goto(U); await p.getByTestId('start').click();
+await p.getByTestId('answer').waitFor({ timeout: 60000 }); await p.getByTestId('answer').fill(A1); await p.getByTestId('submit').click();
+await p.getByTestId('answer').waitFor({ timeout: 90000 }); await p.getByTestId('answer').fill("I'd compare activation before and after launch and check if it's significant."); await p.getByTestId('submit').click();
+await p.getByTestId('see-scorecard').click({ timeout: 90000 });
+const room = p.getByTestId('committee-room'); await room.waitFor({ timeout: 120000 });
+console.log('label:', await p.getByTestId('sim-label').innerText());
+console.log('final:', await p.getByTestId('final-verdict').innerText(), '| distribution:', await p.getByTestId('vote-distribution').innerText());
+console.log('ledger has initial+revised:', await p.getByText(/Initial vote:/).count(), await p.getByText(/Revised vote:/).count());
+await room.scrollIntoViewIfNeeded(); await p.evaluate(() => document.querySelector('[data-testid=committee-room]').scrollIntoView({ block: 'start' }));
+await p.screenshot({ path: '/workspace/ai-hiring-arena-shots/committee-v2.png' });
+await room.screenshot({ path: '/workspace/ai-hiring-arena-shots/committee-v2-full.png' });
+await b.close();

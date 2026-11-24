@@ -27,7 +27,7 @@ export function CommitteeRoom({ data }: { data: CommitteeData }) {
           const v = data.votes.find((x) => x.agent === e.agent)!;
           return (
             <div key={e.agent} className="committee-seat" data-testid={`vote-${e.agent}`}>
-              <Avatar agent={e.agent} state={v.revised === 'strong_hire' || v.revised === 'hire' ? 'pleased' : 'concerned'} size={84} />
+              <Avatar showLabel={false} agent={e.agent} state={v.revised === 'strong_hire' || v.revised === 'hire' ? 'pleased' : 'concerned'} size={84} />
               <b>{e.interviewer}</b><span className="muted">{e.role}</span>
               <span className="muted">Initial: <span className={`rec rec--${v.initial}`}>{LABEL[v.initial]}</span></span>
               <span className="muted">Revised: <span className={`rec rec--${v.revised}`}>{LABEL[v.revised]}</span>{v.revised !== v.initial ? ' (changed)' : ''}</span>
@@ -36,7 +36,7 @@ export function CommitteeRoom({ data }: { data: CommitteeData }) {
           );
         })}
         <div className="committee-seat" data-testid="vote-jordan">
-          <Avatar agent="jordan" state="speaking" size={84} />
+          <Avatar showLabel={false} agent="jordan" state="speaking" size={84} />
           <b>Jordan</b><span className="muted">Committee Chair</span>
           <span>Final: <span className={`rec rec--${data.final.recommendation}`} data-testid="final-verdict">{data.final.label}</span></span>
         </div>

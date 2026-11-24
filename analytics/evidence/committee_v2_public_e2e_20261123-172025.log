@@ -1,0 +1,42 @@
+# committee v2 public e2e against https://ocnos-2a09-bac5-bd0c-741--b9-85.free.pinggy.net (Pinggy tunnel to box, commit dca3959) at 2026-11-23 17:20:25 PST
+
+== STRONG (mode live) final=hire [llm] votes=maya:hire->hire alex:hire->hire status=complete follow_up=no
+   rationale: Must-have competencies are clearly met: strong product metric selection (time-to-first-payout as NSM, KYC as leading input) and rigorous experiment design (account-level randomization, concrete power sizing for baseline/
+PASS STRONG: only 4-level recommendations
+PASS STRONG: interviewers + chair are live LLM
+PASS STRONG: initial + revised votes preserved
+PASS STRONG: chair rationale present, not majority
+PASS STRONG: simulated-feedback label
+PASS STRONG: improvement plan
+
+== AVERAGE (mode live) final=no_hire [llm] votes=maya:no_hire->no_hire alex:no_hire->no_hire status=complete follow_up=no
+   rationale: The candidate identified a plausible primary metric (activation within a week) and suggested A/B testing, but failed multiple must-have competencies for a mid-level Stripe Product Data Scientist. Critical gaps include la
+PASS AVERAGE: only 4-level recommendations
+PASS AVERAGE: interviewers + chair are live LLM
+PASS AVERAGE: initial + revised votes preserved
+PASS AVERAGE: chair rationale present, not majority
+PASS AVERAGE: simulated-feedback label
+PASS AVERAGE: improvement plan
+
+== WEAK (mode live) final=strong_no_hire [llm] votes=maya:strong_no_hire->strong_no_hire alex:strong_no_hire->strong_no_hire status=insufficient_evidence follow_up=no
+   rationale: The candidate’s sole proposal—comparing revenue before vs. after with a dashboard—fails multiple must-have competencies for a Stripe mid-level Product Data Scientist. They did not define appropriate onboarding success me
+PASS WEAK: only 4-level recommendations
+PASS WEAK: interviewers + chair are live LLM
+PASS WEAK: initial + revised votes preserved
+PASS WEAK: chair rationale present, not majority
+PASS WEAK: simulated-feedback label
+PASS WEAK: improvement plan
+
+== INCOMPLETE (mode live) final=strong_no_hire [llm] votes=maya:strong_no_hire->strong_no_hire alex:strong_no_hire->strong_no_hire status=insufficient_evidence follow_up=no
+   rationale: The only evidence provided was “Not sure,” offering no demonstration of must-have competencies for a mid-level Product Data Scientist at Stripe. Specifically, there was no articulation of product metrics/measurement for 
+PASS INCOMPLETE: only 4-level recommendations
+PASS INCOMPLETE: interviewers + chair are live LLM
+PASS INCOMPLETE: initial + revised votes preserved
+PASS INCOMPLETE: chair rationale present, not majority
+PASS INCOMPLETE: simulated-feedback label
+PASS INCOMPLETE: improvement plan
+PASS STRONG -> hire or strong_hire
+PASS WEAK -> no_hire or strong_no_hire
+PASS INCOMPLETE -> insufficient_evidence status, not hire
+AVERAGE final: no_hire
+ALL PASS

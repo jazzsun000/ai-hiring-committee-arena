@@ -1,0 +1,20 @@
+[2026-11-23 17:19:32 PST] clean checkout of origin/master -> /workspace/arena-lingcode-deploy
+[2026-11-23 17:19:32 PST] commit dca3959
+web-dist/index.html                   0.45 kB │ gzip:  0.29 kB
+web-dist/assets/index-Dm_hINmY.css   22.56 kB │ gzip:  5.58 kB
+web-dist/assets/index-CVKXuwsF.js   184.68 kB │ gzip: 59.30 kB
+✓ built in 485ms
+[2026-11-23 17:19:36 PST] lingcode whoami
+jazz.sun000@gmail.com (pro) on https://lingcode.dev
+[2026-11-23 17:19:36 PST] resolve production backend
+Production backend 3d7ba2cea6a3fb0811f16ef7 (.)
+LINGCODE_URL=https://lingcode.dev/api/cloud/be/3d7ba2cea6a3fb0811f16ef7
+[2026-11-23 17:19:37 PST] vault secret RUNWARE_API_KEY -> HTTP 200 (value not logged)
+[2026-11-23 17:19:37 PST] vault secret TELEM_API_KEY -> HTTP 200 (value not logged)
+[2026-11-23 17:19:37 PST] vault secret LLM_PROVIDER -> HTTP 200 (value not logged)
+[2026-11-23 17:19:37 PST] vault secret RUNWARE_MODEL -> HTTP 200 (value not logged)
+[2026-11-23 17:19:37 PST] lingcode ship --server --name ai-hiring-arena-v2
+Detected a node server (forced).
+Production backend 3d7ba2cea6a3fb0811f16ef7 (.)
+Error: Hosted apps are not included in your plan (Tier pro allows 1 hosted apps; you have 1). Static sites ship on every plan: `lingcode ship --static`.
+[2026-11-23 17:19:38 PST] ship exit 1

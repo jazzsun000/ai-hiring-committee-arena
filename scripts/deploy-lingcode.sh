@@ -19,7 +19,7 @@ envval() { # $1 = name; server/.env wins, then process env
 
 say "clean checkout of origin/master -> $DEPLOY_DIR"
 if [ ! -d "$DEPLOY_DIR/.git" ]; then git clone -q "$REPO" "$DEPLOY_DIR"; fi
-git -C "$DEPLOY_DIR" fetch -q https://github.com/jazzsun000/ai-hiring-committee-arena.git master
+git -C "$DEPLOY_DIR" fetch -q https://github.com/jazzsun000/ai-hiring-committee-arena.git "${BRANCH:-master}"
 git -C "$DEPLOY_DIR" checkout -q -B deploy FETCH_HEAD
 say "commit $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
 cd "$DEPLOY_DIR"
