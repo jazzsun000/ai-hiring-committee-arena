@@ -31,7 +31,7 @@ columns:
     checks:
       - name: not_null
       - name: accepted_values
-        value: ['strong_hire', 'hire', 'lean_hire', 'lean_no_hire', 'no_hire']
+        value: ['strong_hire', 'hire', 'no_hire', 'strong_no_hire']
   - name: adaptivity
     type: boolean
     description: 'Session adaptivity: TRUE when at least half (majority, ties count as adaptive) of all round transitions (round > 1, incl. +1 rounds) adapted per marts.session_trend.adaptivity.'
@@ -70,10 +70,10 @@ scorecards AS (
     SELECT
         session_id,
         score AS scorecard_overall,
-        COALESCE(
-            regexp_extract(reason, 'Recommendation:\s*([a-z_]+)', 1),
-            'no_hire'
-        ) AS recommendation,
+        -- 4-level scale; legacy pre-v2 events (lean_*) are mapped: lean_hire -> hire, lean_no_hire -> no_hire
+        CASE COALESCE(NULLIF(regexp_extract(reason, 'Recommendation:\s*([a-z_]+)', 1), ''), 'no_hire')
+            WHEN 'lean_hire' THEN 'hire' WHEN 'lean_no_hire' THEN 'no_hire'
+            ELSE COALESCE(NULLIF(regexp_extract(reason, 'Recommendation:\s*([a-z_]+)', 1), ''), 'no_hire') END AS recommendation,
         reason AS scorecard_reason
     FROM raw.interview_events
     WHERE type = 'scorecard'

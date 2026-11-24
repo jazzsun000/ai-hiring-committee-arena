@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Arena, DecisionLedger, Scorecard, QuestionChip, AgentChip, SourcesPanel, AGENTS } from './components/arena';
 import type { AgentId, AvatarState, LedgerRow, DifficultyDelta } from './components/arena';
 import { BruinPanel, type BruinResult } from './components/BruinPanel';
+import { CommitteeRoom } from './components/CommitteeRoom';
 import { speak, stopSpeech, resumeSpeech, testVoice, onVoiceStatus, type VoiceStatus, ttsSupported, micSupported, createRecognizer, type Recognizer, type Speaker } from './voice';
 import { api, type Assessment, type Health, type Question, type ScorecardData, type Source } from './api';
 
@@ -77,7 +78,11 @@ export default function App() {
     api.event({ session_id: sid, type: 'decision', agent: 'jordan', round: rounds.length, reason: 'Interview ended via Finish interview; writing scorecard', text: 'finish' });
     const c = await api.scorecard(sid);
     setCard(c);
-    addLedger({ agent: 'jordan', round: c.rounds, decision: `Scorecard: ${c.recommendation.replace(/_/g, ' ')} (${c.overall}/5)`, reason: `Average of ${c.rounds * 2} independent scores; quotes taken verbatim from answers.` });
+    if (c.committee) {
+      for (const e of c.committee.initial) addLedger({ agent: e.agent, round: c.rounds, decision: `Initial vote: ${e.recommendation.replace(/_/g, ' ')} (${e.confidence} confidence)`, reason: e.assessment_status === 'insufficient_evidence' ? 'Assessment status: insufficient evidence.' : (e.critical_gaps[0] ?? e.strengths[0] ?? 'Independent vote.') });
+      for (const r of c.committee.revisions) addLedger({ agent: r.agent, round: c.rounds, decision: `Revised vote: ${r.revised.replace(/_/g, ' ')}${r.changed ? ' (changed)' : ' (kept)'}`, reason: `${r.challenge} ${r.rationale}`.trim() });
+      addLedger({ agent: 'jordan', round: c.rounds, decision: `Committee verdict: ${c.committee.final.label}`, reason: c.committee.final.rationale });
+    } else addLedger({ agent: 'jordan', round: c.rounds, decision: `Scorecard: ${c.recommendation.replace(/_/g, ' ')} (${c.overall}/5)`, reason: `Quotes taken verbatim from answers.` });
     setPhase('done');
     runBruin(sid);
   }, () => finish(sid));
@@ -294,6 +299,7 @@ export default function App() {
 
           {card && (
             <div data-testid="scorecard" ref={scorecardRef}>
+              {card.committee && <CommitteeRoom data={card.committee} />}
               <Scorecard candidate="Candidate" role={card.role} company={card.company} skills={card.skills} recommendation={card.recommendation} summary={card.summary} overall={card.overall} />
               <div className="panel quotes" data-testid="quotes">
                 <p className="overline">In your own words</p>

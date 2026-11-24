@@ -195,9 +195,8 @@
 .scorecard-summary { margin: 0 0 14px; font-size: 14px; line-height: 1.5; color: #CBD5E1; }
 .rec { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .02em; }
 .rec--strong_hire, .rec--hire { color: #052E1F; background: var(--good); }
-.rec--lean_hire { color: var(--good); background: rgba(52,211,153,.14); border: 1px solid rgba(52,211,153,.4); }
-.rec--lean_no_hire { color: var(--mid); background: rgba(251,191,36,.14); border: 1px solid rgba(251,191,36,.4); }
-.rec--no_hire { color: #fff; background: #DC2626; }
+.rec--no_hire { color: var(--mid); background: rgba(251,191,36,.14); border: 1px solid rgba(251,191,36,.4); }
+.rec--strong_no_hire { color: #fff; background: #DC2626; }
 
 .skill-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .skill { padding: 12px; border-radius: 12px; background: var(--arena-bg-2); border: 1px solid var(--arena-border); }

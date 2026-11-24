@@ -54,3 +54,10 @@ textarea { width: 100%; box-sizing: border-box; resize: vertical; }
   .arena-bubble-text { max-height: 10em; }
 }
 .voice-status { font-size: 11px; margin: 4px 0 8px; overflow-wrap: anywhere; }
+.committee { margin-top: 12px; padding: 14px 16px; }
+.committee-label { font-weight: 700; color: #FBBF24; border: 1px solid #FBBF24; border-radius: 8px; padding: 6px 10px; }
+.committee-insuff { color: #FCA5A5; font-weight: 600; }
+.committee-seats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0; }
+.committee-seat { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; font-size: 13px; }
+.committee-eval { border-top: 1px solid #26304A; padding-top: 8px; margin-top: 8px; font-size: 13px; }
+.committee h4 { margin: 12px 0 4px; }

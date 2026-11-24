@@ -1,123 +1,136 @@
-Analyzed the pipeline 'arena-evaluation' with 5 assets.
+Analyzed the pipeline 'arena-evaluation' with 6 assets.
 
 Pipeline: arena-evaluation (.)
   No issues found
 
-✓ Successfully validated 5 assets across 1 pipeline, all good.
+✓ Successfully validated 6 assets across 1 pipeline, all good.
 
-Interval: 2026-11-22T00:00:00Z - 2026-11-22T23:59:59Z
+Interval: 2026-11-23T00:00:00Z - 2026-11-23T23:59:59Z
 
 Starting the pipeline execution...
 
-[12:41:35] Running:  raw.interview_events
-[12:41:35] Finished: raw.interview_events (13ms)
-[12:41:35] Running:  raw.interview_events:custom-check:raw_events_table_is_not_empty
-[12:41:35] Running:  raw.interview_events:type:not_null
-[12:41:35] Running:  raw.interview_events:agent:not_null
-[12:41:35] Running:  raw.interview_events:type:accepted_values
-[12:41:35] Running:  raw.interview_events:agent:accepted_values
-[12:41:35] Running:  raw.interview_events:source_file:not_null
-[12:41:35] Running:  raw.interview_events:ts:not_null
-[12:41:35] Finished: raw.interview_events:type:not_null (0s)
-[12:41:35] Running:  raw.interview_events:session_id:not_null
-[12:41:35] Finished: raw.interview_events:agent:not_null (0s)
-[12:41:35] Running:  raw.interview_events:round:not_null
-[12:41:35] Finished: raw.interview_events:type:accepted_values (0s)
-[12:41:35] Finished: raw.interview_events:agent:accepted_values (0s)
-[12:41:35] Finished: raw.interview_events:custom-check:raw_events_table_is_not_empty (1ms)
-[12:41:35] Finished: raw.interview_events:ts:not_null (0s)
-[12:41:35] Finished: raw.interview_events:source_file:not_null (0s)
-[12:41:35] Finished: raw.interview_events:round:not_null (0s)
-[12:41:35] Finished: raw.interview_events:session_id:not_null (0s)
-[12:41:35] Running:  marts.agent_decisions
-[12:41:35] Running:  marts.answer_scores
-[12:41:35] Finished: marts.agent_decisions (2ms)
-[12:41:35] Running:  marts.agent_decisions:custom-check:agent_decisions_is_not_empty
-[12:41:35] Running:  marts.agent_decisions:agent:accepted_values
-[12:41:35] Running:  marts.agent_decisions:reason:not_null
-[12:41:35] Running:  marts.agent_decisions:ts:not_null
-[12:41:35] Running:  marts.agent_decisions:round:not_null
-[12:41:35] Running:  marts.agent_decisions:session_id:not_null
-[12:41:35] Running:  marts.agent_decisions:decision:not_null
-[12:41:35] Running:  marts.agent_decisions:agent:not_null
-[12:41:35] Finished: marts.answer_scores (3ms)
-[12:41:35] Running:  marts.answer_scores:score:not_null
-[12:41:35] Running:  marts.answer_scores:agent:accepted_values
-[12:41:35] Running:  marts.answer_scores:difficulty:not_null
-[12:41:35] Finished: marts.agent_decisions:reason:not_null (1ms)
-[12:41:35] Running:  marts.answer_scores:score:non_negative
-[12:41:35] Finished: marts.agent_decisions:agent:accepted_values (1ms)
-[12:41:35] Running:  marts.answer_scores:session_id:not_null
-[12:41:35] Running:  marts.answer_scores:custom-check:answer_scores_is_not_empty
-[12:41:35] Finished: marts.answer_scores:session_id:not_null (0s)
-[12:41:35] Running:  marts.answer_scores:round:not_null
-[12:41:35] Running:  marts.answer_scores:difficulty:accepted_values
-[12:41:35] Running:  marts.answer_scores:topic:not_null
-[12:41:35] Finished: marts.agent_decisions:ts:not_null (1ms)
-[12:41:35] Finished: marts.agent_decisions:agent:not_null (1ms)
-[12:41:35] Finished: marts.answer_scores:custom-check:answer_scores_is_not_empty (0s)
-[12:41:35] Finished: marts.answer_scores:round:not_null (0s)
-[12:41:35] Running:  marts.answer_scores:agent:not_null
-[12:41:35] Finished: marts.agent_decisions:decision:not_null (1ms)
-[12:41:35] Finished: marts.answer_scores:difficulty:not_null (0s)
-[12:41:35] Finished: marts.answer_scores:agent:accepted_values (1ms)
-[12:41:35] Finished: marts.answer_scores:score:non_negative (1ms)
-[12:41:35] Finished: marts.answer_scores:score:not_null (1ms)
-[12:41:35] Finished: marts.agent_decisions:custom-check:agent_decisions_is_not_empty (2ms)
-[12:41:35] Finished: marts.answer_scores:difficulty:accepted_values (0s)
-[12:41:35] Finished: marts.agent_decisions:round:not_null (2ms)
-[12:41:35] Finished: marts.answer_scores:agent:not_null (0s)
-[12:41:35] Finished: marts.answer_scores:topic:not_null (0s)
-[12:41:35] Running:  marts.session_trend
-[12:41:35] Finished: marts.agent_decisions:session_id:not_null (2ms)
-[12:41:35] Finished: marts.session_trend (7ms)
-[12:41:35] Running:  marts.session_trend:custom-check:session_trend_is_not_empty
-[12:41:35] Running:  marts.session_trend:difficulty:accepted_values
-[12:41:35] Running:  marts.session_trend:round:not_null
-[12:41:35] Running:  marts.session_trend:session_id:not_null
-[12:41:35] Running:  marts.session_trend:difficulty:not_null
-[12:41:35] Running:  marts.session_trend:difficulty_rose:not_null
-[12:41:35] Running:  marts.session_trend:difficulty_rank:not_null
-[12:41:35] Finished: marts.session_trend:custom-check:session_trend_is_not_empty (0s)
-[12:41:35] Running:  marts.session_trend:prior_round_high_score:not_null
-[12:41:35] Finished: marts.session_trend:difficulty:accepted_values (0s)
-[12:41:35] Running:  marts.session_trend:adaptivity:not_null
-[12:41:35] Finished: marts.session_trend:round:not_null (0s)
-[12:41:35] Finished: marts.session_trend:session_id:not_null (0s)
-[12:41:35] Finished: marts.session_trend:difficulty:not_null (0s)
-[12:41:35] Finished: marts.session_trend:difficulty_rose:not_null (0s)
-[12:41:35] Finished: marts.session_trend:difficulty_rank:not_null (0s)
-[12:41:35] Finished: marts.session_trend:prior_round_high_score:not_null (0s)
-[12:41:35] Finished: marts.session_trend:adaptivity:not_null (0s)
-[12:41:35] Running:  marts.candidate_summary
-[12:41:35] Finished: marts.candidate_summary (8ms)
-[12:41:35] Running:  marts.candidate_summary:custom-check:candidate_summary_is_not_empty
-[12:41:35] Running:  marts.candidate_summary:overall_avg_score:not_null
-[12:41:35] Running:  marts.candidate_summary:recommendation:accepted_values
-[12:41:35] Running:  marts.candidate_summary:adaptivity:not_null
-[12:41:35] Running:  marts.candidate_summary:n_rounds:not_null
-[12:41:35] Running:  marts.candidate_summary:n_answers:not_null
-[12:41:35] Running:  marts.candidate_summary:recommendation:not_null
-[12:41:35] Finished: marts.candidate_summary:overall_avg_score:not_null (0s)
-[12:41:35] Finished: marts.candidate_summary:adaptivity:not_null (0s)
-[12:41:35] Running:  marts.candidate_summary:session_id:not_null
-[12:41:35] Finished: marts.candidate_summary:custom-check:candidate_summary_is_not_empty (0s)
-[12:41:35] Finished: marts.candidate_summary:n_rounds:not_null (0s)
-[12:41:35] Finished: marts.candidate_summary:recommendation:not_null (0s)
-[12:41:35] Finished: marts.candidate_summary:n_answers:not_null (0s)
-[12:41:35] Finished: marts.candidate_summary:session_id:not_null (0s)
-[12:41:35] Finished: marts.candidate_summary:recommendation:accepted_values (0s)
+[17:19:02] Running:  raw.interview_events
+[17:19:02] Finished: raw.interview_events (17ms)
+[17:19:02] Running:  raw.interview_events:custom-check:raw_events_table_is_not_empty
+[17:19:02] Running:  raw.interview_events:ts:not_null
+[17:19:02] Running:  raw.interview_events:session_id:not_null
+[17:19:02] Running:  raw.interview_events:agent:accepted_values
+[17:19:02] Running:  raw.interview_events:type:not_null
+[17:19:02] Running:  raw.interview_events:round:not_null
+[17:19:02] Running:  raw.interview_events:agent:not_null
+[17:19:02] Running:  raw.interview_events:type:accepted_values
+[17:19:02] Running:  raw.interview_events:source_file:not_null
+[17:19:02] Finished: raw.interview_events:agent:accepted_values (1ms)
+[17:19:02] Finished: raw.interview_events:type:not_null (1ms)
+[17:19:02] Finished: raw.interview_events:agent:not_null (1ms)
+[17:19:02] Finished: raw.interview_events:ts:not_null (1ms)
+[17:19:02] Finished: raw.interview_events:source_file:not_null (1ms)
+[17:19:02] Finished: raw.interview_events:session_id:not_null (1ms)
+[17:19:02] Finished: raw.interview_events:round:not_null (1ms)
+[17:19:02] Finished: raw.interview_events:custom-check:raw_events_table_is_not_empty (1ms)
+[17:19:02] Finished: raw.interview_events:type:accepted_values (1ms)
+[17:19:02] Running:  marts.committee_votes
+[17:19:02] Running:  marts.agent_decisions
+[17:19:02] Running:  marts.answer_scores
+[17:19:02] Finished: marts.agent_decisions (2ms)
+[17:19:02] Running:  marts.agent_decisions:custom-check:agent_decisions_is_not_empty
+[17:19:02] Running:  marts.agent_decisions:agent:accepted_values
+[17:19:02] Running:  marts.agent_decisions:decision:not_null
+[17:19:02] Running:  marts.agent_decisions:round:not_null
+[17:19:02] Running:  marts.agent_decisions:agent:not_null
+[17:19:02] Running:  marts.agent_decisions:ts:not_null
+[17:19:02] Running:  marts.agent_decisions:reason:not_null
+[17:19:02] Running:  marts.agent_decisions:session_id:not_null
+[17:19:02] Finished: marts.answer_scores (2ms)
+[17:19:02] Running:  marts.answer_scores:difficulty:accepted_values
+[17:19:02] Running:  marts.answer_scores:agent:not_null
+[17:19:02] Running:  marts.answer_scores:agent:accepted_values
+[17:19:02] Finished: marts.agent_decisions:decision:not_null (1ms)
+[17:19:02] Running:  marts.answer_scores:score:not_null
+[17:19:02] Finished: marts.agent_decisions:custom-check:agent_decisions_is_not_empty (1ms)
+[17:19:02] Finished: marts.agent_decisions:round:not_null (1ms)
+[17:19:02] Running:  marts.answer_scores:session_id:not_null
+[17:19:02] Running:  marts.answer_scores:round:not_null
+[17:19:02] Finished: marts.answer_scores:score:not_null (0s)
+[17:19:02] Running:  marts.answer_scores:score:non_negative
+[17:19:02] Finished: marts.agent_decisions:session_id:not_null (1ms)
+[17:19:02] Running:  marts.answer_scores:custom-check:answer_scores_is_not_empty
+[17:19:02] Finished: marts.answer_scores:session_id:not_null (0s)
+[17:19:02] Running:  marts.answer_scores:topic:not_null
+[17:19:02] Finished: marts.answer_scores:round:not_null (0s)
+[17:19:02] Finished: marts.answer_scores:score:non_negative (0s)
+[17:19:02] Running:  marts.answer_scores:difficulty:not_null
+[17:19:02] Finished: marts.answer_scores:topic:not_null (0s)
+[17:19:02] Finished: marts.agent_decisions:agent:accepted_values (1ms)
+[17:19:02] Finished: marts.agent_decisions:ts:not_null (1ms)
+[17:19:02] Finished: marts.agent_decisions:reason:not_null (1ms)
+[17:19:02] Finished: marts.answer_scores:difficulty:not_null (0s)
+[17:19:02] Finished: marts.answer_scores:difficulty:accepted_values (1ms)
+[17:19:02] Finished: marts.answer_scores:agent:accepted_values (1ms)
+[17:19:02] Finished: marts.answer_scores:custom-check:answer_scores_is_not_empty (0s)
+[17:19:02] Finished: marts.answer_scores:agent:not_null (1ms)
+[17:19:02] Running:  marts.session_trend
+[17:19:02] Finished: marts.agent_decisions:agent:not_null (2ms)
+[17:19:02] Finished: marts.committee_votes (11ms)
+[17:19:02] Running:  marts.committee_votes:n_changed_after_deliberation:not_null
+[17:19:02] Running:  marts.committee_votes:session_id:unique
+[17:19:02] Finished: marts.committee_votes:n_changed_after_deliberation:not_null (0s)
+[17:19:02] Running:  marts.committee_votes:final_recommendation:not_null
+[17:19:02] Running:  marts.committee_votes:final_recommendation:accepted_values
+[17:19:02] Running:  marts.committee_votes:session_id:not_null
+[17:19:02] Finished: marts.committee_votes:session_id:not_null (0s)
+[17:19:02] Finished: marts.committee_votes:final_recommendation:accepted_values (0s)
+[17:19:02] Finished: marts.committee_votes:session_id:unique (1ms)
+[17:19:02] Finished: marts.committee_votes:final_recommendation:not_null (1ms)
+[17:19:02] Finished: marts.session_trend (9ms)
+[17:19:02] Running:  marts.session_trend:custom-check:session_trend_is_not_empty
+[17:19:02] Running:  marts.session_trend:adaptivity:not_null
+[17:19:02] Running:  marts.session_trend:difficulty_rank:not_null
+[17:19:02] Running:  marts.session_trend:difficulty:accepted_values
+[17:19:02] Running:  marts.session_trend:session_id:not_null
+[17:19:02] Running:  marts.session_trend:round:not_null
+[17:19:02] Running:  marts.session_trend:difficulty:not_null
+[17:19:02] Finished: marts.session_trend:session_id:not_null (0s)
+[17:19:02] Running:  marts.session_trend:difficulty_rose:not_null
+[17:19:02] Finished: marts.session_trend:adaptivity:not_null (0s)
+[17:19:02] Finished: marts.session_trend:round:not_null (0s)
+[17:19:02] Running:  marts.session_trend:prior_round_high_score:not_null
+[17:19:02] Finished: marts.session_trend:difficulty:accepted_values (0s)
+[17:19:02] Finished: marts.session_trend:custom-check:session_trend_is_not_empty (0s)
+[17:19:02] Finished: marts.session_trend:difficulty_rank:not_null (0s)
+[17:19:02] Finished: marts.session_trend:difficulty_rose:not_null (0s)
+[17:19:02] Finished: marts.session_trend:difficulty:not_null (0s)
+[17:19:02] Finished: marts.session_trend:prior_round_high_score:not_null (0s)
+[17:19:02] Running:  marts.candidate_summary
+[17:19:02] Finished: marts.candidate_summary (11ms)
+[17:19:02] Running:  marts.candidate_summary:custom-check:candidate_summary_is_not_empty
+[17:19:02] Running:  marts.candidate_summary:overall_avg_score:not_null
+[17:19:02] Running:  marts.candidate_summary:n_rounds:not_null
+[17:19:02] Running:  marts.candidate_summary:session_id:not_null
+[17:19:02] Running:  marts.candidate_summary:recommendation:accepted_values
+[17:19:02] Running:  marts.candidate_summary:adaptivity:not_null
+[17:19:02] Running:  marts.candidate_summary:n_answers:not_null
+[17:19:02] Running:  marts.candidate_summary:recommendation:not_null
+[17:19:02] Finished: marts.candidate_summary:session_id:not_null (0s)
+[17:19:02] Finished: marts.candidate_summary:overall_avg_score:not_null (0s)
+[17:19:02] Finished: marts.candidate_summary:adaptivity:not_null (0s)
+[17:19:02] Finished: marts.candidate_summary:custom-check:candidate_summary_is_not_empty (0s)
+[17:19:02] Finished: marts.candidate_summary:recommendation:accepted_values (0s)
+[17:19:02] Finished: marts.candidate_summary:n_answers:not_null (0s)
+[17:19:02] Finished: marts.candidate_summary:recommendation:not_null (0s)
+[17:19:02] Finished: marts.candidate_summary:n_rounds:not_null (1ms)
 
 ==================================================
 
 PASS raw.interview_events .........
 PASS marts.agent_decisions ........
 PASS marts.answer_scores ..........
+PASS marts.committee_votes .....
 PASS marts.session_trend .........
 PASS marts.candidate_summary ........
 
 
-bruin run completed successfully in 37ms
+bruin run completed successfully in 47ms
 
- ✓ Assets executed      5 succeeded
- ✓ Quality checks       44 succeeded
+ ✓ Assets executed      6 succeeded
+ ✓ Quality checks       49 succeeded

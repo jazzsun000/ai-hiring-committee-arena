@@ -9,6 +9,7 @@ import { appendEvent, EVENTS_FILE, eventsFileLabel } from './events.js';
 import { runAnalytics, bruinOnHost } from './analytics.js';
 import { retrieveContext, telemStatus, trimWords, openingLead, type Source } from './context.js';
 import { ensureMode, state, tryLLM, cfg } from './llm.js';
+import { runCommittee, REC_LEVEL } from './committee.js';
 
 type Scorer = 'maya' | 'alex';
 interface Question { round: number; asker: Scorer; topic: string; topicLabel: string; difficulty: Difficulty; text: string; reason: string; trend: 'up' | 'down' | 'flat' | 'start'; source: 'llm' | 'deterministic' }
@@ -153,9 +154,6 @@ function pickQuotes(answers: string[], n: number): string[] {
   return out.slice(0, Math.max(n, out.length));
 }
 
-function recFor(avg: number) {
-  return avg >= 4.3 ? 'strong_hire' : avg >= 3.6 ? 'hire' : avg >= 3 ? 'lean_hire' : avg >= 2.2 ? 'lean_no_hire' : 'no_hire';
-}
 
 async function buildScorecard(s: Session) {
   const done = s.rounds.filter((r) => r.answer && r.assessments);
@@ -166,6 +164,7 @@ async function buildScorecard(s: Session) {
   let summary = `${done.length} round(s) completed. Average ${overall.toFixed(1)}/5 across ${all.length} independent assessments.`;
   let quotes: string[] = [];
   let source: 'llm' | 'deterministic' = 'deterministic';
+  const committeeP = runCommittee(s.company, s.role, s.rounds.map((r) => ({ question: r.question.text, topic: r.question.topicLabel, difficulty: r.question.difficulty, answer: r.answer, scores: r.assessments?.map((a) => ({ agent: a.agent, score: a.score, evidence: a.evidence, gap: a.gap })) })));
   const raw = (await tryLLM(
     'You are Jordan, the Evaluator, writing the final scorecard. Respond with STRICT JSON only: {"summary":"3 sentences","quotes":["at least 2 EXACT verbatim substrings copied from the candidate answers"]}',
     `Company: ${s.company}. Role: ${s.role}. Rounds: ${JSON.stringify(done.map((r) => ({ q: r.question.text, answer: r.answer, assessments: r.assessments })))}`,
@@ -175,7 +174,12 @@ async function buildScorecard(s: Session) {
   if (raw && Array.isArray(raw.quotes)) quotes = raw.quotes.filter((q): q is string => typeof q === 'string' && isVerbatim(q, answers));
   // Enforce >= 2 verbatim quotes from what the candidate actually typed.
   if (quotes.length < 2) for (const q of [...done.map((r) => r.assessments![0].evidence).filter((e) => isVerbatim(e, answers)), ...pickQuotes(answers, 2)]) if (quotes.length < 2 && !quotes.includes(q)) quotes.push(q);
-  const card = { company: s.company, role: s.role, overall: Math.round(overall * 10) / 10, recommendation: done.length ? recFor(overall) : 'no_hire', summary, quotes, skills, rounds: done.length, source };
+  const committee = await committeeP;
+  // Decision ledger / Bruin: initial votes, challenges + revised votes, chair verdict (all preserved).
+  for (const e of committee.initial) log(s, done.length, 'decision', e.agent, { topic: 'vote_initial', score: REC_LEVEL[e.recommendation], reason: `Initial vote: ${e.recommendation} (confidence ${e.confidence}, status ${e.assessment_status})`, text: JSON.stringify({ recommendation: e.recommendation, competencies: e.competencies, critical_gaps: e.critical_gaps, status: e.assessment_status }) });
+  for (const r of committee.revisions) log(s, done.length, 'decision', r.agent, { topic: 'vote_revised', score: REC_LEVEL[r.revised], reason: `Revised vote: ${r.revised}${r.changed ? ' (changed)' : ' (kept)'}: ${r.rationale}`, text: JSON.stringify({ recommendation: r.revised, changed: r.changed, challenge: r.challenge }) });
+  log(s, done.length, 'decision', 'jordan', { topic: 'committee_final', score: REC_LEVEL[committee.final.recommendation], reason: `Committee verdict: ${committee.final.recommendation}. ${committee.final.rationale}`, text: JSON.stringify({ recommendation: committee.final.recommendation, agreement_initial: committee.agreement_initial, agreement_final: committee.agreement_final, coverage: committee.coverage, status: committee.assessment_status, follow_up: committee.follow_up_question }) });
+  const card = { company: s.company, role: s.role, overall: Math.round(overall * 10) / 10, recommendation: committee.final.recommendation, summary, quotes, skills, rounds: done.length, source, committee };
   s.scorecard = card;
   log(s, done.length, 'scorecard', 'jordan', { score: card.overall, reason: `Recommendation: ${card.recommendation}`, text: JSON.stringify({ summary, quotes }) });
   return card;

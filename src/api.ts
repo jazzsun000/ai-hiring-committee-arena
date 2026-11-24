@@ -7,7 +7,8 @@ export interface Health { ok: boolean; mode: 'live' | 'demo'; provider?: string;
 export interface Source { title: string; url: string; snippet: string }
 export interface ScorecardData {
   company: string; role: string; overall: number;
-  recommendation: 'strong_hire' | 'hire' | 'lean_hire' | 'lean_no_hire' | 'no_hire';
+  recommendation: 'strong_hire' | 'hire' | 'no_hire' | 'strong_no_hire';
+  committee?: import('./components/CommitteeRoom').CommitteeData;
   summary: string; quotes: string[]; rounds: number; source: string;
   skills: { skill: string; score: number; evidence: string; gap: string; assessedBy: Scorer }[];
 }

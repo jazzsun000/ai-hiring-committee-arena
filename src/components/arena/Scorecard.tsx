@@ -1,7 +1,7 @@
 import type { AgentId } from './types';
 import { AgentChip } from './DecisionLedger';
 
-export type HireRecommendation = 'strong_hire' | 'hire' | 'lean_hire' | 'lean_no_hire' | 'no_hire';
+export type HireRecommendation = 'strong_hire' | 'hire' | 'no_hire' | 'strong_no_hire';
 
 export interface SkillScore {
   skill: string;
@@ -24,11 +24,10 @@ export interface ScorecardProps {
 }
 
 const REC_LABEL: Record<HireRecommendation, string> = {
-  strong_hire: 'Strong hire',
-  hire: 'Hire',
-  lean_hire: 'Lean hire',
-  lean_no_hire: 'Lean no hire',
-  no_hire: 'No hire',
+  strong_hire: 'Strong Hire (4)',
+  hire: 'Hire (3)',
+  no_hire: 'No Hire (2)',
+  strong_no_hire: 'Strong No Hire (1)',
 };
 
 function tone(score: number) {

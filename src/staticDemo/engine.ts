@@ -152,7 +152,7 @@ function pickQuotes(answers: string[], n: number): string[] {
 }
 
 function recFor(avg: number) {
-  return avg >= 4.3 ? 'strong_hire' : avg >= 3.6 ? 'hire' : avg >= 3 ? 'lean_hire' : avg >= 2.2 ? 'lean_no_hire' : 'no_hire';
+  return avg >= 4.3 ? 'strong_hire' : avg >= 3.5 ? 'hire' : avg >= 2 ? 'no_hire' : 'strong_no_hire';
 }
 
 export function startSession(company: string, role: string) {
