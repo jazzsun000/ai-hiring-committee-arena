@@ -7,6 +7,9 @@ const r = await p.goto(U); console.log('homepage', r.status());
 await p.getByTestId('mode-badge').filter({ hasText: 'LIVE' }).waitFor({ timeout: 30000 });
 console.log('badge', await p.getByTestId('mode-badge').innerText());
 console.log('voice-toggle present', await p.getByTestId('voice-toggle').count());
+console.log('test-voice present', await p.getByTestId('voice-test').count());
+await p.getByTestId('voice-test').click(); await p.waitForTimeout(1500);
+console.log('voice status after Test voice:', await p.getByTestId('voice-status').innerText().catch(() => '(none)'));
 await p.getByTestId('voice-toggle').click(); console.log('voice toggle after tap:', await p.getByTestId('voice-toggle').innerText());
 await p.selectOption('select >> nth=0', 'Netflix').catch(() => console.log('(no company select)'));
 await p.getByRole('button', { name: /start/i }).first().click();
@@ -15,7 +18,7 @@ const q = await p.locator('.bubble, [class*=bubble]').first().innerText().catch(
 console.log('Q1 bubble:', q);
 console.log('mid-sentence ellipsis in Q1:', /(\.\.\.|…)/.test(q));
 console.log('mic present', await p.getByTestId('mic').count());
-const TAG = process.env.SHOT_TAG || 'v2';
+const TAG = process.env.SHOT_TAG || 'v3';
 console.log('replay buttons (bubble, question card):', await p.getByTestId('replay-bubble').count(), await p.getByTestId('replay-q-1').count());
 await p.evaluate(() => window.scrollTo(0, 0));
 const geo = await p.evaluate(() => { const a = document.querySelector('.arena')?.getBoundingClientRect(); const b = document.querySelector('.arena-bubble')?.getBoundingClientRect(); const t = document.querySelector('.arena-bubble-text'); return { arenaTop: a?.top, bubbleTop: b?.top, scrollTop: t?.scrollTop, start: (t?.textContent || '').slice(0, 40) }; });

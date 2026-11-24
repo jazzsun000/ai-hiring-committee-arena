@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Arena, DecisionLedger, Scorecard, QuestionChip, AgentChip, SourcesPanel, AGENTS } from './components/arena';
 import type { AgentId, AvatarState, LedgerRow, DifficultyDelta } from './components/arena';
 import { BruinPanel, type BruinResult } from './components/BruinPanel';
-import { speak, stopSpeech, resumeSpeech, ttsSupported, micSupported, createRecognizer, type Recognizer, type Speaker } from './voice';
+import { speak, stopSpeech, resumeSpeech, testVoice, onVoiceStatus, type VoiceStatus, ttsSupported, micSupported, createRecognizer, type Recognizer, type Speaker } from './voice';
 import { api, type Assessment, type Health, type Question, type ScorecardData, type Source } from './api';
 
 const DEFAULT_ROUNDS = 2;
@@ -28,6 +28,9 @@ export default function App() {
   const [voiceOn, setVoiceOn] = useState(false);
   const [speaking, setSpeaking] = useState<Speaker | null>(null);
   const [listening, setListening] = useState(false);
+  const [vstatus, setVstatus] = useState<VoiceStatus | null>(null);
+  const [showVStatus, setShowVStatus] = useState(false);
+  useEffect(() => onVoiceStatus(setVstatus), []);
   const recRef = useRef<Recognizer | null>(null);
   const [ledger, setLedger] = useState<LedgerRow[]>([]);
   const [card, setCard] = useState<ScorecardData | null>(null);
@@ -197,12 +200,16 @@ export default function App() {
         </div>
         <div className="header-pills">
         {bruinVerified && <span className="bruin-pill" data-testid="bruin-pill" title="Every answer, score and decision piped through a Bruin pipeline into DuckDB marts">Bruin analytics</span>}
+        <button type="button" className="btn voice-toggle" onClick={() => { setShowVStatus(true); testVoice(); }} data-testid="voice-test" title="Plays a beep, then speaks a test sentence with your browser's default voice">🔔 Test voice</button>
         {ttsSupported && <button type="button" className={`btn voice-toggle${voiceOn ? ' primary' : ''}`} onClick={toggleVoice} aria-pressed={voiceOn} data-testid="voice-toggle" title="Interviewers speak using your browser's built-in speech (Web Speech API)">{voiceOn ? '🔊 Voice on' : '🔇 Voice off'}</button>}
         <span className={`mode-badge ${live ? 'mode-badge--live' : 'mode-badge--demo'}`} data-testid="mode-badge" >
           {health ? (live ? 'LIVE · Runware' : 'DEMO') : '…'}
         </span>
         </div>
       </header>
+      {(voiceOn || showVStatus) && vstatus && (
+        <p className="voice-status muted mono" data-testid="voice-status">speechSynthesis: {vstatus.supported ? 'yes' : 'no'} · voices: {vstatus.voices} · last: {vstatus.last} · audio: {vstatus.audio}</p>
+      )}
       {health && !live && (
         <div className="demo-banner" data-testid="demo-banner">
           {import.meta.env.VITE_STATIC_DEMO === '1'

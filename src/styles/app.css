@@ -53,3 +53,4 @@ textarea { width: 100%; box-sizing: border-box; resize: vertical; }
   .arena-bubble { max-width: 100%; }
   .arena-bubble-text { max-height: 10em; }
 }
+.voice-status { font-size: 11px; margin: 4px 0 8px; overflow-wrap: anywhere; }
