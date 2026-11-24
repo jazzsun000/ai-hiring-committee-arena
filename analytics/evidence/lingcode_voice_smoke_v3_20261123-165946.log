@@ -1,0 +1,32 @@
+homepage 200
+badge LIVE · Runware
+voice-toggle present 1
+test-voice present 1
+voice status after Test voice: speechSynthesis: yes · voices: 0 · last: error:synthesis-failed (test) · audio: beep ok
+voice toggle after tap: 🔊 Voice on
+Q1 bubble: Round 1 of 2 · Netflix · Product Data Scientist
+MAYA
+Netflix's listing says messaging is Netflix’s most personal, 1:1 touchpoint with our members across off-platform channels such as email and push notifications. Our new onboarding flow at Netflix just launched. How would you measure whether it worked?
+🔊 Replay
+Maya
+Hiring Manager
+Alex
+Technical Interviewer
+Jordan
+Evaluator
+mid-sentence ellipsis in Q1: false
+mic present 1
+replay buttons (bubble, question card): 1 1
+bubble geometry {"arenaTop":266,"bubbleTop":314.99200439453125,"scrollTop":0,"start":"Netflix's listing says messaging is Netf"} bubble start visible: true
+scorecard shown; quotes: 4
+page errors 0 []
+--- API LIVE check
+session mode live telem sources 8 Q1 medium
+R1 (README STRONG) maya=5(llm) alex=5(llm)
+Q2 hard up llm
+R2 (WEAK) maya=1(llm) alex=1(llm)
+Q3 easy down
+scorecard lean_hire 3 source llm quotes 2
+bruin endpoint {"ok":false,"available":false,"reason":"Bruin CLI not available on this host; pipeline evidence comes from the repo run (analytics/evidence/bruin_run.log)."}
+events write ok true
+health events_file /tmp/arena-data/events.jsonl bruin_on_host false telem {"available":true,"lastOk":true,"lastCount":8,"lastError":null,"lastAt":"2026-11-24T01:00:01.405Z"}
