@@ -57,7 +57,20 @@ export function bestSentence(snippet: string, title: string): string {
   const segs = snippet.split(/\n+|#{1,6}\s+|\.{3,}|…/).map((seg) => seg.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[#*_>`|]+/g, ' ').replace(/\s+/g, ' ').trim());
   const sents = segs.flatMap((seg) => seg.split(/(?<=[.!?])\s+/)).map((x) => x.trim()).filter((x) => x.length >= 40 && x.length <= 260 && /[.!?]$/.test(x));
   const pick = sents.find((x) => /team|partner|experiment|product|data scien|metric|analy/i.test(x)) ?? sents[0];
-  return trimWords(pick ?? title, 160);
+  return pick ?? '';
+}
+
+/** Trim to a complete sentence or clause (never a mid-sentence fragment or '…'); '' if none fits. */
+function completeClause(text: string, max: number): string {
+  let t = text.replace(/\s+/g, ' ').trim().replace(/(\.{3,}|…)+$/, '').trim();
+  if (!t) return '';
+  if (t.length > max) {
+    const cut = t.slice(0, max);
+    const i = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf(', '), cut.lastIndexOf('; '), cut.lastIndexOf(' — '), cut.lastIndexOf(' – '));
+    if (i < max * 0.4) return '';
+    t = cut.slice(0, i);
+  }
+  return t.replace(/[\s,;:.\-–—]+$/, '') + '.';
 }
 
 /** One short sentence (≤ ~120 chars) paraphrasing the top source, for the opening bubble. Full snippet stays in SourcesPanel. */
@@ -67,6 +80,6 @@ export function openingLead(company: string, top: Source): string {
   const own = host.includes(company.toLowerCase().replace(/[^a-z0-9]/g, ''));
   const label = own ? `${company}'s listing` : `A ${company} interview guide`;
   let sent = bestSentence(top.snippet, top.title).replace(/…$/, '').replace(/^(about (the|us|our)[^.]*?\s(?=our|we|the)\s*)/i, '').replace(/^our\s+/i, 'the ').replace(/^about\s+(the\s+)?\S+\s+(?=[A-Z])/i, '');
-  sent = trimWords(sent.charAt(0).toLowerCase() + sent.slice(1), 120 - label.length - 8).replace(/[.…]+$/, '');
-  return `${label} says ${sent}…`;
+  sent = completeClause(sent.charAt(0).toLowerCase() + sent.slice(1), 170 - label.length);
+  return sent ? `${label} says ${sent}` : '';
 }

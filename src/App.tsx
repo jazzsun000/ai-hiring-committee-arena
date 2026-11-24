@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Arena, DecisionLedger, Scorecard, QuestionChip, AgentChip, SourcesPanel, AGENTS } from './components/arena';
 import type { AgentId, AvatarState, LedgerRow, DifficultyDelta } from './components/arena';
 import { BruinPanel, type BruinResult } from './components/BruinPanel';
+import { speak, stopSpeech, primeSpeech, ttsSupported, micSupported, createRecognizer, type Recognizer, type Speaker } from './voice';
 import { api, type Assessment, type Health, type Question, type ScorecardData, type Source } from './api';
 
 const DEFAULT_ROUNDS = 2;
@@ -24,6 +25,10 @@ export default function App() {
   const [rounds, setRounds] = useState<RoundView[]>([]);
   const [targetRounds, setTargetRounds] = useState(DEFAULT_ROUNDS);
   const [draft, setDraft] = useState('');
+  const [voiceOn, setVoiceOn] = useState(false);
+  const [speaking, setSpeaking] = useState<Speaker | null>(null);
+  const [listening, setListening] = useState(false);
+  const recRef = useRef<Recognizer | null>(null);
   const [ledger, setLedger] = useState<LedgerRow[]>([]);
   const [card, setCard] = useState<ScorecardData | null>(null);
   const [error, setError] = useState<{ msg: string; retry: () => void } | null>(null);
@@ -134,6 +139,37 @@ export default function App() {
     return { activeAgent: null, states: base, statusLabels: undefined, bubble: undefined };
   }, [phase, current, rounds, card]);
 
+  // Voice (browser Web Speech API): read each new interviewer message aloud; avatar shows Speaking while it plays.
+  const spokenText = phase === 'asking' && current ? current.question.text : phase === 'done' && card ? `Recommendation: ${card.recommendation.replace(/_/g, ' ')}. Overall ${card.overall} out of 5. ${card.summary}` : '';
+  const spokenBy: Speaker | null = phase === 'asking' && current ? current.question.asker : phase === 'done' && card ? 'jordan' : null;
+  useEffect(() => {
+    if (!voiceOn || !spokenText || !spokenBy) return;
+    speak(spokenBy, spokenText, { start: () => setSpeaking(spokenBy), end: () => setSpeaking(null) });
+  }, [voiceOn, spokenText, spokenBy]);
+  useEffect(() => { if (phase !== 'asking') stopMic(); }, [phase]);
+  const shownStates = speaking ? { ...states, [speaking]: 'speaking' as AvatarState } : states;
+  const toggleVoice = () => {
+    if (voiceOn) { stopSpeech(); setSpeaking(null); setVoiceOn(false); }
+    else { primeSpeech(); setVoiceOn(true); }
+  };
+  function stopMic() { recRef.current?.stop(); recRef.current = null; setListening(false); }
+  const toggleMic = () => {
+    if (listening) return stopMic();
+    const r = createRecognizer();
+    if (!r) return;
+    stopSpeech();
+    const base = draft ? draft.replace(/\s*$/, ' ') : '';
+    r.onresult = (e) => {
+      let text = '';
+      for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+      setDraft(base + text.trim());
+    };
+    r.onend = () => { setListening(false); recRef.current = null; };
+    r.onerror = () => { setListening(false); recRef.current = null; };
+    recRef.current = r; setListening(true);
+    try { r.start(); } catch { setListening(false); recRef.current = null; }
+  };
+
   const busyLine = phase === 'scoring' ? 'Maya & Alex are scoring…' : phase === 'deciding' ? 'Jordan is deciding the next question…' : phase === 'finishing' ? 'Jordan is writing the scorecard…' : '';
   const live = health?.mode === 'live';
 
@@ -146,6 +182,7 @@ export default function App() {
         </div>
         <div className="header-pills">
         {bruinVerified && <span className="bruin-pill" data-testid="bruin-pill" title="Every answer, score and decision piped through a Bruin pipeline into DuckDB marts">Bruin analytics</span>}
+        {ttsSupported && <button type="button" className={`btn voice-toggle${voiceOn ? ' primary' : ''}`} onClick={toggleVoice} aria-pressed={voiceOn} data-testid="voice-toggle" title="Interviewers speak using your browser's built-in speech (Web Speech API)">{voiceOn ? '🔊 Voice on' : '🔇 Voice off'}</button>}
         <span className={`mode-badge ${live ? 'mode-badge--live' : 'mode-badge--demo'}`} data-testid="mode-badge" >
           {health ? (live ? 'LIVE · Runware' : 'DEMO') : '…'}
         </span>
@@ -163,7 +200,7 @@ export default function App() {
 
       <Arena
         activeAgent={activeAgent}
-        states={states}
+        states={shownStates}
         bubble={bubble}
         statusLabels={statusLabels}
         caption={current ? `Round ${current.question.round} of ${targetRounds} · ${company} · ${role}` : 'Maya (Hiring Manager) · Alex (Technical) · Jordan (Evaluator)'}
@@ -213,7 +250,10 @@ export default function App() {
               {phase === 'asking' && (
                 <div className="answer-box">
                   <textarea ref={answerRef} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Type your answer…" rows={6} data-testid="answer" />
-                  <button className="btn primary" onClick={submit} disabled={!draft.trim()} data-testid="submit">Submit answer</button>
+                  <div className="answer-actions">
+                    {micSupported && <button type="button" className={`btn mic-btn${listening ? ' primary' : ''}`} onClick={toggleMic} aria-pressed={listening} data-testid="mic" title="Dictate with your browser's speech recognition">{listening ? '⏹ Stop dictation' : '🎤 Speak answer'}</button>}
+                    <button className="btn primary" onClick={() => { stopMic(); submit(); }} disabled={!draft.trim()} data-testid="submit">Submit answer</button>
+                  </div>
                 </div>
               )}
               {phase === 'between' && (

@@ -40,6 +40,10 @@ npm run dev
 - **Storage:** the app directory is read-only, so events go to `/tmp/arena-data/events.jsonl`, which is ephemeral and reset on redeploy.
 - **Evidence:** [deploy log](analytics/evidence/lingcode_deploy_20261123-154326.log), [public API e2e](analytics/evidence/lingcode_public_e2e_20261123-154409.log), [public UI e2e](analytics/evidence/lingcode_deploy.md).
 
+## Voice (browser Web Speech API)
+
+Click **🔇 Voice off** in the header to turn voice on. Each new interviewer message (Maya's or Alex's question, then Jordan's scorecard summary) is then read aloud with the browser's built-in `speechSynthesis`. Each avatar gets a different voice and pitch where the device offers them, and the avatar shows "Speaking" while it plays. **🎤 Speak answer** dictates into the answer box with `SpeechRecognition` / `webkitSpeechRecognition`. The mic button is hidden when the browser doesn't support it; Chrome, Edge and recent Safari (including iOS) do, and Firefox doesn't. This is browser speech, not a sponsor integration: no keys are used, and the available voices depend on the device.
+
 ## Public static demo (GitHub Pages)
 
 GitHub Pages can only host a static site, so this is a clearly labeled **DEMO**, not the LIVE interview:
